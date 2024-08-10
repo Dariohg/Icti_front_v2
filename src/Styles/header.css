@@ -1,0 +1,21 @@
+.header {
+    background: #001529;
+    padding: 0;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    width: 120px;
+    height: 31px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px 24px 16px 0;
+    float: left;
+}
+
+/* Ajustar el contenido para dejar espacio al Header fijo */
+.ant-layout-content {
+    margin-top: 64px; /* La altura del Header */
+}

@@ -1,0 +1,31 @@
+.header {
+    background: #001529;
+    padding: 0;
+}
+
+.logo {
+    width: 120px;
+    height: 31px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px 24px 16px 0;
+    float: left;
+}
+
+.site-layout-background {
+    background: #fff;
+}
+
+.trigger-button {
+    padding: 10px;
+    text-align: center;
+    background: #001529;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trigger-icon {
+    color: #fff;
+    font-size: 18px;
+}

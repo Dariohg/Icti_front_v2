@@ -1,0 +1,23 @@
+.sidebar-container {
+    background: #001529;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.trigger-button {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.ant-menu-item .anticon,
+.ant-menu-submenu-title .anticon {
+    margin-right: 8px;
+}
+
+.ant-menu-item {
+    display: flex;
+    align-items: center;
+}
