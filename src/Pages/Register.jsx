@@ -1,11 +1,14 @@
 import React from 'react';
 import { Form, Input, Button, Row, Col, Select } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import '../Styles/register.css'; // Importar estilos personalizados
 
 const { Option } = Select;
 
 const Register = () => {
+    const navigate = useNavigate();
+
     const onFinish = (values) => {
         console.log('Received values of form: ', values);
     };
@@ -18,6 +21,10 @@ const Register = () => {
             return Promise.reject(new Error('The two passwords do not match!'));
         },
     });
+
+    const handleCancel = () => {
+        navigate('/home'); // Redirige a la página de inicio
+    };
 
     return (
         <div className="register-container">
@@ -122,6 +129,9 @@ const Register = () => {
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="register-form-button">
                             Register
+                        </Button>
+                        <Button danger type="text" onClick={handleCancel} className="register-form-button" style={{ marginTop: '25px' }}>
+                            Cancel
                         </Button>
                     </Form.Item>
                 </Form>

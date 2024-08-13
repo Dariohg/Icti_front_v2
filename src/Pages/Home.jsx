@@ -1,10 +1,11 @@
 import React from 'react';
+import '../Styles/home.css';
 
 const Home = () => {
     return (
-        <div>
-            <h1>Welcome to the Home Page!</h1>
-            <p>This is the content of the Home page.</p>
+        <div style={{ padding: '24px' }}>
+            <h2>Bienvenido al Home</h2>
+            <p>Esta es la página principal de la aplicación.</p>
         </div>
     );
 };

@@ -141,8 +141,8 @@ const AddEnlace = () => {
                     </Form.Item>
                 </Col>
             </Row>
-            <Row gutter={24} justify="end">
-                <Col>
+            <Row gutter={12} justify="center">
+                    <Col>
                     <Button type="default" onClick={handleCancel} style={{ marginRight: 8 }}>
                         Cancelar
                     </Button>
