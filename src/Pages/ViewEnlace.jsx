@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography } from 'antd';
+import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EditOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import EditContractDrawer from '../components/EditContractDrawer'; // Asegúrate de ajustar la ruta
 
 const { Text } = Typography;
@@ -29,38 +30,43 @@ const ViewEnlace = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = {
-                nombre: 'Juan',
-                apellidoPaterno: 'Pérez',
-                apellidoMaterno: 'Gómez',
-                correo: 'juan.perez@example.com',
-                telefono: '555-555-5555',
-                dependencia: 'Dependencia A',
-                direccion: 'Dirección A',
-                adscripcion: 'Adscripción A',
-                cargo: 'Cargo A',
-                contratos: [
-                    {
-                        key: 1,
-                        fechaContrato: '2022-01-01',
-                        tipoInstalacion: 'Instalación A',
-                        tipoContrato: 'Contrato A',
-                        versionContrato: 'V1',
-                        estatus: 'Activo',
-                        descripcion: 'Descripción del contrato A.',
-                    },
-                    {
-                        key: 2,
-                        fechaContrato: '2022-02-01',
-                        tipoInstalacion: 'Instalación B',
-                        tipoContrato: 'Contrato B',
-                        versionContrato: 'V2',
-                        estatus: 'Inactivo',
-                        descripcion: 'Descripción del contrato B.',
-                    },
-                ],
-            };
-            setEnlaceData(data);
+            try {
+                // Solicitud para obtener los datos del enlace por ID
+                const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`);
+                const enlace = enlaceResponse.data;
+
+                // Solicitud para obtener los contratos asociados al enlace
+                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/byId/${id}`);
+                const contratos = contratosResponse.data;
+
+                // Mapea los contratos con los datos necesarios
+                const contratosMapped = contratos.map(contrato => ({
+                    key: contrato.idContrato,
+                    fechaContrato: contrato.fechaContrato,
+                    tipoInstalacion: contrato.ubicacion,
+                    tipoContrato: contrato.tipoContrato,
+                    versionContrato: contrato.versionContrato,
+                    estatus: contrato.estatus === 1 ? 'Activo' : 'Inactivo',
+                    descripcion: contrato.descripcion,
+                }));
+
+                // Actualiza el estado con los datos del enlace y contratos
+                setEnlaceData({
+                    nombre: enlace.nombre,
+                    apellidoPaterno: enlace.apellidoP,
+                    apellidoMaterno: enlace.apellidoM,
+                    correo: enlace.correo,
+                    telefono: enlace.telefono,
+                    dependencia: enlace.direccion.dependencia.nombreCorto,
+                    direccion: enlace.direccion.nombre,
+                    adscripcion: enlace.departamento.nombreDepartamento,
+                    cargo: enlace.cargoEnlace.nombreCargo,
+                    contratos: contratosMapped,
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos del enlace:', error);
+                message.error('Hubo un error al obtener los datos del enlace.');
+            }
         };
 
         fetchData();

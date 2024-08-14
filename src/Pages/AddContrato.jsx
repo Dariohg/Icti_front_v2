@@ -13,14 +13,17 @@ const AddContrato = () => {
     const [clienteOptions, setClienteOptions] = useState([]);
     const [tipoContratoOptions, setTipoContratoOptions] = useState([]);
     const [versionContratoOptions, setVersionContratoOptions] = useState([]);
+    const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
+
     const [cliente, setCliente] = useState(null);
     const [tipoContrato, setTipoContrato] = useState(null);
     const [versionContrato, setVersionContrato] = useState(null);
-    const [tipoInstalacion, setTipoInstalacion] = useState([]);
+    const [tipoInstalacion, setTipoInstalacion] = useState(null);
 
     useEffect(() => {
         fetchClientes();
         fetchTipoContratos();
+        fetchTipoInstalacion(); // Cargar las opciones de tipo de instalación
     }, []);
 
     const fetchClientes = async () => {
@@ -65,6 +68,20 @@ const AddContrato = () => {
         }
     };
 
+    const fetchTipoInstalacion = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}tipoInstalacion/`);
+            const tipoInstalacionMapped = response.data.map(instalacion => ({
+                value: instalacion.id_tipoInstalacion,
+                label: instalacion.nombre
+            }));
+            setTipoInstalacionOptions(tipoInstalacionMapped);
+        } catch (error) {
+            console.error('Error al obtener los tipos de instalación:', error);
+            message.error('Hubo un error al obtener los tipos de instalación');
+        }
+    };
+
     const handleTipoContratoChange = (selectedValue) => {
         setTipoContrato(selectedValue);
         fetchVersionesContrato(selectedValue); // Obtener las versiones de contrato cuando se selecciona un tipo de contrato
@@ -72,17 +89,26 @@ const AddContrato = () => {
 
     const handleSave = () => {
         form.validateFields()
-            .then(values => {
+            .then(async (values) => {
                 const dataToSave = {
-                    ...values,
-                    cliente,
-                    tipoContrato,
-                    versionContrato,
-                    tipoInstalacion,
+                    persona_id: cliente,
+                    estatus: 1, // Puedes ajustar este valor según sea necesario
+                    descripcion: values.descripcion,
+                    fechaContrato: values.fechaContrato.format('YYYY-MM-DD'),
+                    id_user: 1, // Ajusta el valor del usuario según sea necesario
+                    id_versionContrato: versionContrato,
+                    ubicacion: tipoInstalacion, // Ajusta la ubicación según corresponda
+                    id_tipoContrato: tipoContrato,
                 };
-                console.log('Datos guardados:', dataToSave);
-                // Aquí puedes agregar la lógica para guardar los datos en el backend
-                navigate('/listarContratos');
+
+                try {
+                    await axios.post(`${process.env.REACT_APP_BACKEND_URI}contrato/createContrato`, dataToSave);
+                    message.success('Contrato creado correctamente');
+                    navigate('/contratos');
+                } catch (error) {
+                    console.error('Error al crear el contrato:', error);
+                    message.error('Hubo un error al crear el contrato');
+                }
             })
             .catch(info => {
                 console.log('Validación fallida:', info);
@@ -92,12 +118,6 @@ const AddContrato = () => {
     const handleCancel = () => {
         navigate('/listarContratos');
     };
-
-    const tipoInstalacionOptions = [
-        { value: 'instalacion1', label: 'Instalación 1' },
-        { value: 'instalacion2', label: 'Instalación 2' },
-        { value: 'instalacion3', label: 'Instalación 3' },
-    ];
 
     return (
         <Form
