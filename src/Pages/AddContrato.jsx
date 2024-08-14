@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Row, Col, DatePicker } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, Row, Col, DatePicker, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import Dropdown from '../components/Dropdown'; // Importa tu componente Dropdown
+import Dropdown from '../components/Dropdown';
+import axios from 'axios';
 
 const { TextArea } = Input;
 
@@ -9,10 +10,65 @@ const AddContrato = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
 
+    const [clienteOptions, setClienteOptions] = useState([]);
+    const [tipoContratoOptions, setTipoContratoOptions] = useState([]);
+    const [versionContratoOptions, setVersionContratoOptions] = useState([]);
     const [cliente, setCliente] = useState(null);
     const [tipoContrato, setTipoContrato] = useState(null);
     const [versionContrato, setVersionContrato] = useState(null);
     const [tipoInstalacion, setTipoInstalacion] = useState([]);
+
+    useEffect(() => {
+        fetchClientes();
+        fetchTipoContratos();
+    }, []);
+
+    const fetchClientes = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/status?estatus=1`);
+            const clientesMapped = response.data.map(cliente => ({
+                value: cliente.idPersona,
+                label: `${cliente.nombre} ${cliente.apellidoP} ${cliente.apellidoM}`
+            }));
+            setClienteOptions(clientesMapped);
+        } catch (error) {
+            console.error('Error al obtener los clientes:', error);
+            message.error('Hubo un error al obtener los clientes');
+        }
+    };
+
+    const fetchTipoContratos = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}tipoContrato/`);
+            const tiposContratoMapped = response.data.map(tipo => ({
+                value: tipo.idTipoContrato,
+                label: tipo.nombre
+            }));
+            setTipoContratoOptions(tiposContratoMapped);
+        } catch (error) {
+            console.error('Error al obtener los tipos de contrato:', error);
+            message.error('Hubo un error al obtener los tipos de contrato');
+        }
+    };
+
+    const fetchVersionesContrato = async (tipoContratoId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}versionContrato/tipoContrato/${tipoContratoId}`);
+            const versionesMapped = response.data.map(version => ({
+                value: version.id_version,
+                label: version.descripcion
+            }));
+            setVersionContratoOptions(versionesMapped);
+        } catch (error) {
+            console.error('Error al obtener las versiones de contrato:', error);
+            message.error('Hubo un error al obtener las versiones de contrato');
+        }
+    };
+
+    const handleTipoContratoChange = (selectedValue) => {
+        setTipoContrato(selectedValue);
+        fetchVersionesContrato(selectedValue); // Obtener las versiones de contrato cuando se selecciona un tipo de contrato
+    };
 
     const handleSave = () => {
         form.validateFields()
@@ -26,7 +82,7 @@ const AddContrato = () => {
                 };
                 console.log('Datos guardados:', dataToSave);
                 // Aquí puedes agregar la lógica para guardar los datos en el backend
-                navigate('/listarContratos'); // Redirigir a la lista de contratos después de guardar
+                navigate('/listarContratos');
             })
             .catch(info => {
                 console.log('Validación fallida:', info);
@@ -34,26 +90,8 @@ const AddContrato = () => {
     };
 
     const handleCancel = () => {
-        navigate('/listarContratos'); // Redirigir a la lista de contratos al cancelar
+        navigate('/listarContratos');
     };
-
-    const clienteOptions = [
-        { value: 'cliente1', label: 'Cliente 1' },
-        { value: 'cliente2', label: 'Cliente 2' },
-        { value: 'cliente3', label: 'Cliente 3' },
-    ];
-
-    const tipoContratoOptions = [
-        { value: 'contrato1', label: 'Tipo de Contrato 1' },
-        { value: 'contrato2', label: 'Tipo de Contrato 2' },
-        { value: 'contrato3', label: 'Tipo de Contrato 3' },
-    ];
-
-    const versionContratoOptions = [
-        { value: 'v1', label: 'Versión 1' },
-        { value: 'v2', label: 'Versión 2' },
-        { value: 'v3', label: 'Versión 3' },
-    ];
 
     const tipoInstalacionOptions = [
         { value: 'instalacion1', label: 'Instalación 1' },
@@ -89,7 +127,7 @@ const AddContrato = () => {
                     >
                         <Dropdown
                             value={tipoContrato}
-                            onChange={setTipoContrato}
+                            onChange={handleTipoContratoChange}
                             options={tipoContratoOptions}
                         />
                     </Form.Item>
@@ -115,6 +153,7 @@ const AddContrato = () => {
                             value={versionContrato}
                             onChange={setVersionContrato}
                             options={versionContratoOptions}
+                            disabled={!tipoContrato} // Desactivar si no se ha seleccionado un tipo de contrato
                         />
                     </Form.Item>
                 </Col>

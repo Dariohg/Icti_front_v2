@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Table, Button, Input, Tag, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import axios from 'axios'; // Importar Axios
+
 
 const { Text } = Typography;
 
@@ -70,7 +72,6 @@ const data = [
             }
         ]
     },
-    // Agrega más filas según sea necesario
 ];
 
 const expandedRowRender = (record) => {
@@ -111,6 +112,19 @@ const Enlaces = () => {
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
     const [filteredData, setFilteredData] = useState(data);
     const [searchText, setSearchText] = useState('');
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get(`${process.env.BACKEND_URI}enlace/status?estatus=1`);
+            setFilteredData(response.data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleExpand = (expanded, record) => {
         let newExpandedRowKeys = [...expandedRowKeys];
