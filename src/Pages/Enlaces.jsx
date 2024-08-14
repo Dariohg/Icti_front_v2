@@ -1,83 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, Tag, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
-import axios from 'axios'; // Importar Axios
-
+import axios from 'axios';
 
 const { Text } = Typography;
-
-const data = [
-    {
-        key: '1',
-        nombre: 'Juan Pérez',
-        correo: 'juan.perez@example.com',
-        telefono: '555-555-5555',
-        dependencia: 'Dependencia A',
-        direccion: 'Dirección A',
-        adscripcion: 'Adscripción A',
-        cargo: 'Cargo A',
-        contratos: [
-            {
-                key: 1,
-                fechaContrato: '2022-01-01',
-                tipoInstalacion: 'Instalación A',
-                tipoContrato: 'Contrato A',
-                versionContrato: 'V1',
-                estatus: 'Activo',
-            },
-            {
-                key: 2,
-                fechaContrato: '2022-02-01',
-                tipoInstalacion: 'Instalación B',
-                tipoContrato: 'Contrato B',
-                versionContrato: 'V2',
-                estatus: 'Inactivo',
-            },
-            {
-                key: 3,
-                fechaContrato: '2022-03-01',
-                tipoInstalacion: 'Instalación C',
-                tipoContrato: 'Contrato C',
-                versionContrato: 'V3',
-                estatus: 'Activo',
-            },
-        ]
-    },
-    {
-        key: '2',
-        nombre: 'Ana Gómez',
-        correo: 'ana.gomez@example.com',
-        telefono: '555-555-5556',
-        dependencia: 'Dependencia B',
-        direccion: 'Dirección B',
-        adscripcion: 'Adscripción B',
-        cargo: 'Cargo B',
-        contratos: [
-            {
-                key: 1,
-                fechaContrato: '2022-01-01',
-                tipoInstalacion: 'Instalación A',
-                tipoContrato: 'Contrato A',
-                versionContrato: 'V1',
-                estatus: 'Activo',
-            },
-            {
-                key: 2,
-                fechaContrato: '2022-02-01',
-                tipoInstalacion: 'Instalación B',
-                tipoContrato: 'Contrato B',
-                versionContrato: 'V2',
-                estatus: 'Activo',
-            }
-        ]
-    },
-];
 
 const expandedRowRender = (record) => {
     const subTableColumns = [
         { title: 'Fecha de contrato', dataIndex: 'fechaContrato', key: 'fechaContrato' },
-        { title: 'Tipo de instalación', dataIndex: 'tipoInstalacion', key: 'tipoInstalacion' },
+        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion' },
         { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato' },
         { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato' },
         {
@@ -85,15 +17,15 @@ const expandedRowRender = (record) => {
             dataIndex: 'estatus',
             key: 'estatus',
             render: estatus => (
-                <Tag color={estatus === 'Activo' ? 'green' : 'red'}>
-                    {estatus.toUpperCase()}
+                <Tag color={estatus === 1 ? 'green' : 'red'}>
+                    {estatus === 1 ? 'ACTIVO' : 'INACTIVO'}
                 </Tag>
             ),
         },
     ];
 
-    const limitedData = record.contratos.slice(0, 2); // Limita a 2 filas
-    const hasMore = record.contratos.length > 2; // Verifica si hay más de 2 contratos
+    const limitedData = record.contratos.slice(0, 2);
+    const hasMore = record.contratos.length > 2;
 
     return (
         <>
@@ -110,13 +42,29 @@ const expandedRowRender = (record) => {
 const Enlaces = () => {
     const navigate = useNavigate();
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.BACKEND_URI}enlace/status?estatus=1`);
-            setFilteredData(response.data);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/status?estatus=1`);
+            const enlacesData = response.data;
+
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/`);
+            const contratosData = contratosResponse.data;
+
+            const enlacesMapped = enlacesData.map(enlace => ({
+                key: enlace.idPersona,
+                nombre: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`,
+                correo: enlace.correo,
+                telefono: enlace.telefono,
+                dependencia: enlace.direccion.dependencia.nombreCorto,
+                direccion: enlace.direccion.nombre,
+                adscripcion: enlace.departamento.nombreDepartamento,
+                cargo: enlace.cargoEnlace.nombreCargo,
+                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
+            }));
+            setFilteredData(enlacesMapped);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -131,7 +79,7 @@ const Enlaces = () => {
 
         if (expanded) {
             if (newExpandedRowKeys.length >= 2) {
-                newExpandedRowKeys.shift(); // Remover la primera subtabla abierta
+                newExpandedRowKeys.shift();
             }
             newExpandedRowKeys.push(record.key);
         } else {
@@ -144,19 +92,13 @@ const Enlaces = () => {
     const handleSearch = (e) => {
         const { value } = e.target;
         setSearchText(value);
-        const filtered = data.filter((item) =>
+        const filtered = filteredData.filter((item) =>
             item.nombre.toLowerCase().includes(value.toLowerCase())
         );
         setFilteredData(filtered);
     };
 
     const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'key',
-            key: 'key',
-            width: 50,
-        },
         {
             title: 'Nombre',
             dataIndex: 'nombre',
