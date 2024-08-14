@@ -2,12 +2,29 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import '../Styles/login.css'; // Importar estilos personalizados
+import axios from 'axios';
 
 const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const handleLogin = async (values) => {
+        try {
+            const response = await axios.post('http://localhost:8000/auth/login', 
+                values,
+                {
+                    withCredentials: true,
+                }
+            );
+            console.log(response);
+            // Redirect to main page
+            window.location.href = "/home";
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     const onFinish = (values) => {
         console.log('Received values of form: ', values);
+        handleLogin(values);
     };
 
     const togglePasswordVisibility = () => {
@@ -54,7 +71,7 @@ const Login = () => {
                         <Button type="primary" htmlType="submit" className="login-form-button">
                             Log in
                         </Button>
-                        Or <a href="">register now!</a>
+                        Or <a href="/register">register now!</a>
                     </Form.Item>
                 </Form>
             </div>
