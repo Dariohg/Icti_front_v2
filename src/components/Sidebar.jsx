@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import {
     FileTextOutlined,
@@ -15,19 +15,23 @@ import '../Styles/sidebar.css'; // Importar estilos personalizados
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 
-const Sidebar = ({ onCollapse, collapsed }) => {
+const Sidebar = ({ onCollapse }) => {
+    // Estado inicial colapsado
+    const [collapsed, setCollapsed] = useState(true);
     const location = useLocation();
 
-    useEffect(() => {
-        onCollapse(collapsed);
-    }, [collapsed, onCollapse]);
-
     const toggleCollapsed = () => {
-        onCollapse(!collapsed);
+        setCollapsed(!collapsed);
+        if (onCollapse) {
+            onCollapse(!collapsed);
+        }
     };
 
     return (
-        <div
+        <Sider
+            collapsible
+            collapsed={collapsed}
+            collapsedWidth={80}
             className={`sidebar-container ${collapsed ? 'collapsed' : ''}`}
             style={{
                 position: 'fixed',
@@ -36,14 +40,16 @@ const Sidebar = ({ onCollapse, collapsed }) => {
                 width: collapsed ? 80 : 200,
                 height: 'calc(100vh - 64px)',
                 overflow: 'hidden',
-                transition: 'width 0.2s ease-in-out',
                 zIndex: 1000,
                 display: 'flex',
                 flexDirection: 'column',
-
             }}
         >
-            <div className="trigger-button" onClick={toggleCollapsed} style={{ textAlign: 'center', padding: '10px', transition: 'width 0.2s ease-in-out' }}>
+            <div
+                className="trigger-button"
+                onClick={toggleCollapsed}
+                style={{ textAlign: 'center', padding: '10px', cursor: 'pointer' }}
+            >
                 {collapsed ? (
                     <MenuUnfoldOutlined style={{ color: '#fff', fontSize: '18px' }} />
                 ) : (
@@ -100,7 +106,7 @@ const Sidebar = ({ onCollapse, collapsed }) => {
                     </Menu.Item>
                 </SubMenu>
             </Menu>
-        </div>
+        </Sider>
     );
 };
 

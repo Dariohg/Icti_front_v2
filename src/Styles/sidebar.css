@@ -1,16 +1,5 @@
-.sidebar-container {
-    background: #001529;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
-.trigger-button {
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-}
+
 
 .ant-menu-item .anticon,
 .ant-menu-submenu-title .anticon {
@@ -20,4 +9,18 @@
 .ant-menu-item {
     display: flex;
     align-items: center;
+}
+
+
+
+.ant-layout-sider-trigger {
+    display: none !important;
+}
+
+/* Asegurarse de que no quede espacio vacío o una franja después de quitar el botón */
+.ant-layout-sider {
+    border-bottom: none;
+}
+:where(.css-dev-only-do-not-override-d2lrxs).ant-layout .ant-layout-sider {
+    background: none;
 }

@@ -15,7 +15,8 @@ import {
 const { Content } = Layout;
 
 function Render({ children }) {
-    const [collapsed, setCollapsed] = useState(false);
+    // Estado inicial como colapsado
+    const [collapsed, setCollapsed] = useState(true);
     const location = useLocation();
 
     const handleCollapse = (newCollapsedState) => {

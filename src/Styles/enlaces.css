@@ -1,7 +1,5 @@
-.site-layout-background {
-    background: #fff;
-}
-
-h2 {
-    margin-bottom: 16px;
+@media only screen and (max-width: 600px) {
+    .login-form-container {
+        padding: 10px;
+    }
 }
