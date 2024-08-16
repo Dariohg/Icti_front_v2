@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message } from 'antd';
+import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, Popconfirm } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import EditContractDrawer from '../components/EditContractDrawer'; // Asegúrate de ajustar la ruta
 
@@ -31,15 +31,12 @@ const ViewEnlace = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Solicitud para obtener los datos del enlace por ID
                 const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`);
                 const enlace = enlaceResponse.data;
 
-                // Solicitud para obtener los contratos asociados al enlace
                 const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/byId/${id}`);
                 const contratos = contratosResponse.data;
 
-                // Mapea los contratos con los datos necesarios
                 const contratosMapped = contratos.map(contrato => ({
                     key: contrato.idContrato,
                     fechaContrato: contrato.fechaContrato,
@@ -50,7 +47,6 @@ const ViewEnlace = () => {
                     descripcion: contrato.descripcion,
                 }));
 
-                // Actualiza el estado con los datos del enlace y contratos
                 setEnlaceData({
                     nombre: enlace.nombre,
                     apellidoPaterno: enlace.apellidoP,
@@ -83,6 +79,22 @@ const ViewEnlace = () => {
     const handleSave = () => {
         console.log('Datos guardados:', enlaceData);
         setEditable(false);
+    };
+
+    const handleDelete = async () => {
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URI}enlace/eliminar/${id}`, { estatus_id: 3 });
+            if (response.status === 200) {
+                message.success('Enlace eliminado correctamente');
+                navigate('/enlaces');
+            } else {
+                message.error('Error al eliminar el enlace.');
+                console.error('Error en la respuesta:', response);
+            }
+        } catch (error) {
+            console.error('Error al eliminar el enlace:', error.response ? error.response.data : error.message);
+            message.error('Hubo un error al eliminar el enlace.');
+        }
     };
 
     const handleChange = (e) => {
@@ -274,6 +286,21 @@ const ViewEnlace = () => {
                     bordered
                     expandedRowRender={expandedRowRender}
                 />
+            </div>
+
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <Popconfirm
+                    title="¿Estás seguro de que deseas eliminar este enlace?"
+                    icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={handleDelete}
+                    okText="Sí"
+                    cancelText="No"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Button type="danger" icon={<DeleteOutlined />}>
+                        Eliminar Enlace
+                    </Button>
+                </Popconfirm>
             </div>
 
             <EditContractDrawer
