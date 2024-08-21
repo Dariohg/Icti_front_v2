@@ -22,25 +22,88 @@ const AddEnlace = () => {
         console.log('process.env:', process.env);  // Verifica qué variables de entorno están disponibles
         console.log('BACKEND_URI:', process.env.REACT_APP_BACKEND_URI);  // Debe mostrar la URI correcta
         getDependencias();
+        getCargos();
     }, []);
-
 
     const getDependencias = async () => {
         try {
-            const [dependenciasRes, cargosRes] = await Promise.all([
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencia/`),
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargo/`),
-            ]);
-            const dependenciasMapped = dependenciasRes.data.map(dep => ({
-                value: dep.idDependencia,
-                label: dep.nombreDependencia
+            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`);
+
+            const dependencias = dependenciasRes.data.dependencias;
+
+            console.log('dependencias:', dependencias);
+
+            const dependenciasMapped = dependencias.map(dep => ({
+                value: dep.id,
+                label: dep.nombre
             }));
+
             setDependenciaOptions(dependenciasMapped);
-            setCargoOptions(cargosRes.data);
+
         } catch (error) {
-            console.error("Error al obtener dependencias y cargos:", error);
+            console.error("Error al obtener dependencias:", error);
         }
     };
+
+    const getCargos = async () => {
+        try {
+            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`);
+
+            const cargos = cargosRes.data.cargos;
+    
+            const cargosMapped = cargos.map(cargo => ({
+                value: cargo.id,
+                label: cargo.nombre
+            }));
+
+            console.log('cargosMapped:', cargosMapped);
+
+            setCargoOptions(cargosMapped);
+    
+        } catch (error) {
+            console.error("Error al obtener los cargos:", error);
+        }
+    };
+
+    const getDepartamentos = async (direccionId) => {
+        try {
+            const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+
+            const departamentos = departamentosRes.data.departamentos;
+
+            console.log('departamentos:', departamentos);
+
+            const departamentosMapped = departamentos.map(dep => ({
+                value: dep.id,
+                label: dep.nombre
+            }));
+
+            setDepartamentoOptions(departamentosMapped);
+
+        } catch (error) {
+            console.error("Error al obtener departamentos:", error);
+        }
+    };
+
+    const getDirecciones = async (dependenciaId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+            
+            const direcciones = response.data.direcciones;
+
+            console.log('direcciones:', direcciones);
+
+            const direccionesMapped = direcciones.map(dir => ({
+                value: dir.id,
+                label: dir.nombre
+            }));
+
+            setDireccionOptions(direccionesMapped);
+        } catch (error) {
+            console.error("Error al obtener las direcciones:", error);
+        }
+    };
+    
 
     const handleDependenciaChange = async (selectedValue) => {
         setSelectedDependencia(selectedValue);
@@ -48,8 +111,7 @@ const AddEnlace = () => {
         setSelectedDepartamento(null);
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direccion/direccionById?dependencia_id=${selectedValue}`);
-            setDireccionOptions(response.data);
+            await getDirecciones(selectedValue);
             setFormData((prevData) => ({
                 ...prevData,
                 dependencia: selectedValue,
@@ -65,8 +127,7 @@ const AddEnlace = () => {
         setSelectedDepartamento(null);
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamento/departamentoById?id_direccion=${selectedValue}`);
-            setDepartamentoOptions(response.data);
+            await getDepartamentos(selectedValue);
             setFormData((prevData) => ({
                 ...prevData,
                 direccion: selectedValue,
@@ -105,13 +166,23 @@ const AddEnlace = () => {
             estatus: 1, // Valor provisional
             adscripcion_id: selectedDepartamento, // ID del departamento seleccionado
             cargo_id: selectedCargo, // ID del cargo seleccionado
-            auth_user_id: 1, // Valor provisional
+            auth_user_id: 7, // Valor provisional
             tipoPersona_id: 1, // Valor provisional
             direccion_id: selectedDireccion, // ID de la dirección seleccionada
         };
 
+        console.log('enlaceData:', enlaceData);
+
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlace/`, enlaceData);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData);
+
+            console.log('response:', response);
+
+            if(response.status !== 201) {
+                message.error('Hubo un error al agregar el enlace');
+                throw new Error('Error al agregar el enlace');
+            }
+
             message.success('Enlace agregado exitosamente');
             navigate('/enlaces');
         } catch (error) {
@@ -143,7 +214,7 @@ const AddEnlace = () => {
                             id="direccion"
                             value={selectedDireccion}
                             onChange={handleDireccionChange}
-                            options={direccionOptions.map((dir) => ({ value: dir.idDireccion, label: dir.nombre }))}
+                            options={direccionOptions}
                             disabled={!selectedDependencia}
                         />
                     </Form.Item>
@@ -156,7 +227,7 @@ const AddEnlace = () => {
                             id="departamento"
                             value={selectedDepartamento}
                             onChange={handleDepartamentoChange}
-                            options={departamentoOptions.map((dep) => ({ value: dep.idDepartamento, label: dep.nombreDepartamento }))}
+                            options={departamentoOptions}
                             disabled={!selectedDireccion}
                         />
                     </Form.Item>
@@ -201,10 +272,7 @@ const AddEnlace = () => {
                             id="cargo"
                             value={selectedCargo}
                             onChange={handleCargoChange}
-                            options={cargoOptions.map((cargo) => ({
-                                value: cargo.idCargo,
-                                label: cargo.nombreCargo
-                            }))}
+                            options={cargoOptions}
                         />
                     </Form.Item>
                 </Col>

@@ -28,9 +28,10 @@ const AddContrato = () => {
 
     const fetchClientes = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/status?estatus=1`);
-            const clientesMapped = response.data.map(cliente => ({
-                value: cliente.idPersona,
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`);
+            const clientes = response.data.enlaces;
+            const clientesMapped = clientes.map(cliente => ({
+                value: cliente.id,
                 label: `${cliente.nombre} ${cliente.apellidoP} ${cliente.apellidoM}`
             }));
             setClienteOptions(clientesMapped);
@@ -42,9 +43,10 @@ const AddContrato = () => {
 
     const fetchTipoContratos = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}tipoContrato/`);
-            const tiposContratoMapped = response.data.map(tipo => ({
-                value: tipo.idTipoContrato,
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`);
+            const tiposContrato = response.data.tipoContrato;
+            const tiposContratoMapped = tiposContrato.map(tipo => ({
+                value: tipo.id,
                 label: tipo.nombre
             }));
             setTipoContratoOptions(tiposContratoMapped);
@@ -56,9 +58,10 @@ const AddContrato = () => {
 
     const fetchVersionesContrato = async (tipoContratoId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}versionContrato/tipoContrato/${tipoContratoId}`);
-            const versionesMapped = response.data.map(version => ({
-                value: version.id_version,
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContratoId}`);
+            const versiones = response.data.versiones;
+            const versionesMapped = versiones.map(version => ({
+                value: version.id,
                 label: version.descripcion
             }));
             setVersionContratoOptions(versionesMapped);
@@ -70,9 +73,10 @@ const AddContrato = () => {
 
     const fetchTipoInstalacion = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}tipoInstalacion/`);
-            const tipoInstalacionMapped = response.data.map(instalacion => ({
-                value: instalacion.id_tipoInstalacion,
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`);
+            const tipoInstalacion = response.data.tipoInstalacion;
+            const tipoInstalacionMapped = tipoInstalacion.map(instalacion => ({
+                value: instalacion.id,
                 label: instalacion.nombre
             }));
             setTipoInstalacionOptions(tipoInstalacionMapped);
@@ -102,9 +106,14 @@ const AddContrato = () => {
                 };
 
                 try {
-                    await axios.post(`${process.env.REACT_APP_BACKEND_URI}contrato/createContrato`, dataToSave);
-                    message.success('Contrato creado correctamente');
-                    navigate('/contratos');
+                    const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}contratos`, dataToSave);
+                    if (response.status !== 201) {
+                        message.error('Error al crear el contrato');
+                        throw new Error('Error al crear el contrato');
+                    } else {
+                        message.success('Contrato creado correctamente');
+                        navigate('/contratos');
+                    }
                 } catch (error) {
                     console.error('Error al crear el contrato:', error);
                     message.error('Hubo un error al crear el contrato');

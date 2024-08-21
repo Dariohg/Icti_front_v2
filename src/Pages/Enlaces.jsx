@@ -48,14 +48,18 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/status?estatus=1`);
-            const enlacesData = response.data;
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`);
+            const enlacesData = response.data.enlaces;
 
-            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/`);
-            const contratosData = contratosResponse.data;
+            console.log(enlacesData);
+
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos`);
+            const contratosData = contratosResponse.data.contratos;
+
+            console.log("contratos data",contratosData);
 
             const enlacesMapped = enlacesData.map(enlace => ({
-                key: enlace.idPersona,
+                key: enlace.id,
                 nombre: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`,
                 correo: enlace.correo,
                 telefono: enlace.telefono,
@@ -63,7 +67,8 @@ const Enlaces = () => {
                 direccion: enlace.direccion.nombre,
                 adscripcion: enlace.departamento.nombreDepartamento,
                 cargo: enlace.cargoEnlace.nombreCargo,
-                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
+                // contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
+                contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id), // Filtra los contratos por persona
             }));
 
             setOriginalData(enlacesMapped); // Guardar los datos originales

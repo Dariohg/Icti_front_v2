@@ -8,7 +8,7 @@ const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const handleLogin = async (values) => {
         try {
-            const response = await axios.post('http://localhost:8000/auth/login', 
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/login`, 
                 values,
                 {
                     withCredentials: true,
