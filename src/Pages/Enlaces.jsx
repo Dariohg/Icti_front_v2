@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Tag, Space, Typography, Divider } from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
 
 const { Text, Title } = Typography;
+const { Option } = Select;
+
+const serviceOptions = [
+    'Servicios de Hosting',
+    'Servicios de Maquinas Virtuales',
+    'Servicios de Telefonia',
+    'Servicios de Internet',
+    'RIG'
+];
 
 const expandedRowRender = (record) => {
     const subTableColumns = [
@@ -13,11 +22,11 @@ const expandedRowRender = (record) => {
             title: 'Fecha de contrato',
             dataIndex: 'fechaContrato',
             key: 'fechaContrato',
-            render: (text) => moment(text).format('YYYY-MM-DD'), // Formatear la fecha sin la hora
-            align: 'center', // Centrar contenido
+            render: (text) => moment(text).format('YYYY-MM-DD'),
+            align: 'center',
         },
         { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion', align: 'center' },
-        { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center' },
+        {title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center',},
         { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato', align: 'center' },
         {
             title: 'Estatus',
@@ -53,6 +62,7 @@ const Enlaces = () => {
     const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [selectedServices, setSelectedServices] = useState([]);
 
     const fetchData = async () => {
         try {
@@ -71,7 +81,10 @@ const Enlaces = () => {
                 direccion: enlace.direccion.nombre,
                 adscripcion: enlace.departamento.nombreDepartamento,
                 cargo: enlace.cargoEnlace.nombreCargo,
-                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`),
+                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`).map(contrato => ({
+                    ...contrato,
+                    tipoContrato: contrato.tipoContrato,
+                })),
             }));
 
             setOriginalData(enlacesMapped);
@@ -103,15 +116,30 @@ const Enlaces = () => {
     const handleSearch = (e) => {
         const { value } = e.target;
         setSearchText(value);
+        filterData(value, selectedServices);
+    };
 
-        if (value) {
-            const filtered = originalData.filter((item) =>
-                item.nombre.toLowerCase().includes(value.toLowerCase())
+    const handleServiceChange = (value) => {
+        setSelectedServices(value);
+        filterData(searchText, value);
+    };
+
+    const filterData = (searchText, selectedServices) => {
+        let filtered = originalData;
+
+        if (searchText) {
+            filtered = filtered.filter((item) =>
+                item.nombre.toLowerCase().includes(searchText.toLowerCase())
             );
-            setFilteredData(filtered);
-        } else {
-            setFilteredData(originalData);
         }
+
+        if (selectedServices.length > 0) {
+            filtered = filtered.filter((item) =>
+                item.contratos.some(contrato => selectedServices.includes(contrato.tipoContrato))
+            );
+        }
+
+        setFilteredData(filtered);
     };
 
     const columns = [
@@ -119,43 +147,43 @@ const Enlaces = () => {
             title: 'Nombre',
             dataIndex: 'nombre',
             key: 'nombre',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Correo Electrónico',
             dataIndex: 'correo',
             key: 'correo',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Número de Teléfono',
             dataIndex: 'telefono',
             key: 'telefono',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Dependencia',
             dataIndex: 'dependencia',
             key: 'dependencia',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Dirección',
             dataIndex: 'direccion',
             key: 'direccion',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Adscripción',
             dataIndex: 'adscripcion',
             key: 'adscripcion',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Cargo',
             dataIndex: 'cargo',
             key: 'cargo',
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
         {
             title: 'Acción',
@@ -167,7 +195,7 @@ const Enlaces = () => {
                     </Button>
                 </Space>
             ),
-            align: 'center', // Centrar contenido
+            align: 'center',
         },
     ];
 
@@ -175,7 +203,18 @@ const Enlaces = () => {
         <div>
             <Title level={2}>Enlaces</Title>
             <Divider style={{ marginTop: '20px' }} />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+                <Select
+                    mode="multiple"
+                    placeholder="Filtrar por tipo de servicio"
+                    onChange={handleServiceChange}
+                    style={{ width: 300, marginRight: '10px' }}
+                    allowClear
+                >
+                    {serviceOptions.map(option => (
+                        <Option key={option} value={option}>{option}</Option>
+                    ))}
+                </Select>
                 <Input
                     placeholder="Buscar por nombre"
                     value={searchText}
