@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message } from 'antd';
+import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, Popconfirm, Divider, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import EditContractDrawer from '../components/EditContractDrawer'; // Asegúrate de ajustar la ruta
+import EditContractDrawer from '../components/EditContractDrawer';
 
 const { Text } = Typography;
 
@@ -18,12 +18,17 @@ const ViewEnlace = () => {
         apellidoMaterno: '',
         correo: '',
         telefono: '',
-        dependencia: '',
-        direccion: '',
-        adscripcion: '',
-        cargo: '',
+        dependencia: null,
+        direccion: null,
+        adscripcion: null,
+        cargo: null,
         contratos: [],
     });
+
+    const [dependenciaOptions, setDependenciaOptions] = useState([]);
+    const [direccionOptions, setDireccionOptions] = useState([]);
+    const [departamentoOptions, setDepartamentoOptions] = useState([]);
+    const [cargoOptions, setCargoOptions] = useState([]);
 
     const [selectedContract, setSelectedContract] = useState(null);
     const [drawerVisible, setDrawerVisible] = useState(false);
@@ -31,18 +36,15 @@ const ViewEnlace = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Solicitud para obtener los datos del enlace por ID
                 const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`);
                 const enlace = enlaceResponse.data;
 
-                // Solicitud para obtener los contratos asociados al enlace
                 const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/byId/${id}`);
                 const contratos = contratosResponse.data;
 
-                // Mapea los contratos con los datos necesarios
                 const contratosMapped = contratos.map(contrato => ({
                     key: contrato.idContrato,
-                    fechaContrato: contrato.fechaContrato,
+                    fechaContrato: contrato.fechaContrato.slice(0, 10), // Mostrar solo la fecha
                     tipoInstalacion: contrato.ubicacion,
                     tipoContrato: contrato.tipoContrato,
                     versionContrato: contrato.versionContrato,
@@ -50,19 +52,22 @@ const ViewEnlace = () => {
                     descripcion: contrato.descripcion,
                 }));
 
-                // Actualiza el estado con los datos del enlace y contratos
+                // Establecer los valores obtenidos desde el backend
                 setEnlaceData({
                     nombre: enlace.nombre,
                     apellidoPaterno: enlace.apellidoP,
                     apellidoMaterno: enlace.apellidoM,
                     correo: enlace.correo,
                     telefono: enlace.telefono,
-                    dependencia: enlace.direccion.dependencia.nombreCorto,
-                    direccion: enlace.direccion.nombre,
-                    adscripcion: enlace.departamento.nombreDepartamento,
-                    cargo: enlace.cargoEnlace.nombreCargo,
+                    dependencia: enlace.direccion.dependencia.idDependencia, // El ID de la dependencia
+                    direccion: enlace.direccion.idDireccion, // El ID de la dirección
+                    adscripcion: enlace.departamento.idDepartamento, // El ID del departamento
+                    cargo: enlace.cargoEnlace.idCargo, // El ID del cargo
                     contratos: contratosMapped,
                 });
+
+                // Cargar opciones de dropdowns
+                await loadDropdownOptions(enlace.direccion.dependencia.idDependencia, enlace.direccion.idDireccion);
             } catch (error) {
                 console.error('Error al obtener los datos del enlace:', error);
                 message.error('Hubo un error al obtener los datos del enlace.');
@@ -72,41 +77,104 @@ const ViewEnlace = () => {
         fetchData();
     }, [id]);
 
-    const handleUpdate = () => {
-        setEditable(true);
+    const loadDropdownOptions = async (dependenciaId, direccionId) => {
+        try {
+            const [dependenciasRes, cargosRes] = await Promise.all([
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencia/`),
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargo/`),
+            ]);
+            setDependenciaOptions(dependenciasRes.data);
+            setCargoOptions(cargosRes.data);
+
+            // Cargar direcciones y departamentos en cascada
+            if (dependenciaId) {
+                const direccionesRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direccion/direccionById?dependencia_id=${dependenciaId}`);
+                setDireccionOptions(direccionesRes.data);
+
+                if (direccionId) {
+                    const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamento/departamentoById?id_direccion=${direccionId}`);
+                    setDepartamentoOptions(departamentosRes.data);
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar las opciones de dropdown:', error);
+        }
     };
 
-    const handleCancel = () => {
-        setEditable(false);
+    const handleDependenciaChange = async (value) => {
+        setEnlaceData(prevState => ({
+            ...prevState,
+            dependencia: value,
+            direccion: null,
+            adscripcion: null,
+        }));
+
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direccion/direccionById?dependencia_id=${value}`);
+            setDireccionOptions(response.data);
+            setDepartamentoOptions([]); // Limpiar adscripciones hasta que se seleccione una nueva dirección
+        } catch (error) {
+            console.error('Error al obtener las direcciones:', error);
+        }
     };
 
-    const handleSave = () => {
-        console.log('Datos guardados:', enlaceData);
-        setEditable(false);
+    const handleDireccionChange = async (value) => {
+        setEnlaceData(prevState => ({
+            ...prevState,
+            direccion: value,
+            adscripcion: null,
+        }));
+
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamento/departamentoById?id_direccion=${value}`);
+            setDepartamentoOptions(response.data);
+        } catch (error) {
+            console.error('Error al obtener los departamentos:', error);
+        }
     };
 
-    const handleChange = (e) => {
-        setEnlaceData({
-            ...enlaceData,
-            [e.target.name]: e.target.value,
-        });
+    const handleSave = async () => {
+        console.log('Datos al guardar:', enlaceData);
+        try {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`, enlaceData);
+            message.success('Enlace actualizado correctamente');
+            setEditable(false);
+        } catch (error) {
+            console.error('Error al guardar los datos del enlace:', error);
+            message.error('Hubo un error al guardar los datos del enlace.');
+        }
     };
 
-    const handleEditContract = (contract) => {
-        setSelectedContract(contract);
-        setDrawerVisible(true);
+    const handleDelete = async () => {
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URI}enlace/eliminar/${id}`, { estatus_id: 3 });
+            if (response.status === 200) {
+                message.success('Enlace eliminado correctamente');
+                navigate('/enlaces');
+            } else {
+                message.error('Error al eliminar el enlace.');
+                console.error('Error en la respuesta:', response);
+            }
+        } catch (error) {
+            console.error('Error al eliminar el enlace:', error.response ? error.response.data : error.message);
+            message.error('Hubo un error al eliminar el enlace.');
+        }
     };
 
-    const handleSaveContract = (updatedContract) => {
+    const handleSaveContract = async (updatedContract) => {
         const updatedContracts = enlaceData.contratos.map(contract =>
             contract.key === updatedContract.key ? updatedContract : contract
         );
-        setEnlaceData({ ...enlaceData, contratos: updatedContracts });
+        setEnlaceData(prevState => ({ ...prevState, contratos: updatedContracts }));
         setDrawerVisible(false);
     };
 
     const contratoColumns = [
-        { title: 'Fecha de contrato', dataIndex: 'fechaContrato', key: 'fechaContrato' },
+        {
+            title: 'Fecha de contrato',
+            dataIndex: 'fechaContrato',
+            key: 'fechaContrato',
+        },
         { title: 'Tipo de instalación', dataIndex: 'tipoInstalacion', key: 'tipoInstalacion' },
         { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato' },
         { title: 'Versión del contrato', dataIndex: 'versionContrato', key: 'versionContrato' },
@@ -125,7 +193,7 @@ const ViewEnlace = () => {
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Button icon={<EditOutlined />} onClick={() => handleEditContract(record)}>
+                    <Button icon={<EditOutlined />} onClick={() => { setSelectedContract(record); setDrawerVisible(true); }}>
                         Editar
                     </Button>
                 </Space>
@@ -146,7 +214,7 @@ const ViewEnlace = () => {
                             <Input
                                 name="nombre"
                                 value={enlaceData.nombre}
-                                onChange={handleChange}
+                                onChange={(e) => setEnlaceData({ ...enlaceData, nombre: e.target.value })}
                                 disabled={!editable}
                             />
                         </Form.Item>
@@ -156,7 +224,7 @@ const ViewEnlace = () => {
                             <Input
                                 name="apellidoPaterno"
                                 value={enlaceData.apellidoPaterno}
-                                onChange={handleChange}
+                                onChange={(e) => setEnlaceData({ ...enlaceData, apellidoPaterno: e.target.value })}
                                 disabled={!editable}
                             />
                         </Form.Item>
@@ -168,7 +236,7 @@ const ViewEnlace = () => {
                             <Input
                                 name="apellidoMaterno"
                                 value={enlaceData.apellidoMaterno}
-                                onChange={handleChange}
+                                onChange={(e) => setEnlaceData({ ...enlaceData, apellidoMaterno: e.target.value })}
                                 disabled={!editable}
                             />
                         </Form.Item>
@@ -178,7 +246,7 @@ const ViewEnlace = () => {
                             <Input
                                 name="correo"
                                 value={enlaceData.correo}
-                                onChange={handleChange}
+                                onChange={(e) => setEnlaceData({ ...enlaceData, correo: e.target.value })}
                                 disabled={!editable}
                             />
                         </Form.Item>
@@ -190,18 +258,24 @@ const ViewEnlace = () => {
                             <Input
                                 name="telefono"
                                 value={enlaceData.telefono}
-                                onChange={handleChange}
+                                onChange={(e) => setEnlaceData({ ...enlaceData, telefono: e.target.value })}
                                 disabled={!editable}
                             />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item label="Dependencia">
-                            <Input
-                                name="dependencia"
-                                value={enlaceData.dependencia}
-                                onChange={handleChange}
+                            <Select
+                                value={enlaceData.dependencia}  // El valor es el ID de la dependencia
+                                onChange={(value) => handleDependenciaChange(value)}
                                 disabled={!editable}
+                                options={dependenciaOptions.map(dep => ({ value: dep.idDependencia, label: dep.nombreDependencia }))}
+                                showSearch
+                                placeholder="Selecciona una dependencia"
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                             />
                         </Form.Item>
                     </Col>
@@ -209,21 +283,33 @@ const ViewEnlace = () => {
                 <Row gutter={24}>
                     <Col span={12}>
                         <Form.Item label="Dirección">
-                            <Input
-                                name="direccion"
-                                value={enlaceData.direccion}
-                                onChange={handleChange}
+                            <Select
+                                value={enlaceData.direccion}  // El valor es el ID de la dirección
+                                onChange={(value) => handleDireccionChange(value)}
                                 disabled={!editable}
+                                options={direccionOptions.map(dir => ({ value: dir.idDireccion, label: dir.nombre }))}
+                                showSearch
+                                placeholder="Selecciona una dirección"
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                             />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item label="Adscripción">
-                            <Input
-                                name="adscripcion"
-                                value={enlaceData.adscripcion}
-                                onChange={handleChange}
+                        <Form.Item label="Adscripción (Departamento)">
+                            <Select
+                                value={enlaceData.adscripcion}  // El valor es el ID de la adscripción
+                                onChange={(value) => setEnlaceData({ ...enlaceData, adscripcion: value })}
                                 disabled={!editable}
+                                options={departamentoOptions.map(dep => ({ value: dep.idDepartamento, label: dep.nombreDepartamento }))}
+                                showSearch
+                                placeholder="Selecciona una adscripción"
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                             />
                         </Form.Item>
                     </Col>
@@ -231,31 +317,36 @@ const ViewEnlace = () => {
                 <Row gutter={24}>
                     <Col span={12}>
                         <Form.Item label="Cargo">
-                            <Input
-                                name="cargo"
-                                value={enlaceData.cargo}
-                                onChange={handleChange}
+                            <Select
+                                value={enlaceData.cargo}  // El valor es el ID del cargo
+                                onChange={(value) => setEnlaceData({ ...enlaceData, cargo: value })}
                                 disabled={!editable}
+                                options={cargoOptions.map(cargo => ({ value: cargo.idCargo, label: cargo.nombreCargo }))}
+                                showSearch
+                                placeholder="Selecciona un cargo"
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                             />
                         </Form.Item>
                     </Col>
                     <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {!editable && (
+                        {!editable ? (
                             <>
-                                <Button type="primary" onClick={handleUpdate} style={{ flex: 1, marginRight: 8 }}>
+                                <Button type="primary" onClick={() => setEditable(true)} style={{ flex: 1, marginRight: 8 }}>
                                     Actualizar
                                 </Button>
                                 <Button danger type="text" onClick={() => navigate('/enlaces')} style={{ flex: 1 }}>
                                     Volver
                                 </Button>
                             </>
-                        )}
-                        {editable && (
+                        ) : (
                             <>
                                 <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
                                     Guardar
                                 </Button>
-                                <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                                <Button danger type="text" onClick={() => setEditable(false)} style={{ flex: 1 }}>
                                     Cancelar
                                 </Button>
                             </>
@@ -274,6 +365,23 @@ const ViewEnlace = () => {
                     bordered
                     expandedRowRender={expandedRowRender}
                 />
+            </div>
+
+            <Divider style={{ marginTop: '40px' }} />
+
+            <div style={{ textAlign: 'center' }}>
+                <Popconfirm
+                    title="¿Estás seguro de que deseas eliminar este enlace?"
+                    icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={handleDelete}
+                    okText="Sí"
+                    cancelText="No"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Button danger icon={<DeleteOutlined />}>
+                        Eliminar Enlace
+                    </Button>
+                </Popconfirm>
             </div>
 
             <EditContractDrawer

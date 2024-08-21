@@ -40,38 +40,34 @@ const Login = () => {
                     initialValues={{ remember: true }}
                     onFinish={onFinish}
                 >
-                    <h2 className="login-title">Login</h2>
+                    <h2 className="login-title">Iniciar Sesión</h2>
                     <Form.Item
                         name="username"
-                        rules={[{ required: true, message: 'Please input your Username!' }]}
+                        rules={[{ required: true, message: '¡Por favor ingresa tu nombre de usuario!' }]}
                     >
-                        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
+                        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Nombre de usuario" />
                     </Form.Item>
                     <Form.Item
                         name="password"
-                        rules={[{ required: true, message: 'Please input your Password!' }]}
+                        rules={[{ required: true, message: '¡Por favor ingresa tu contraseña!' }]}
                     >
                         <Input.Password
                             prefix={<LockOutlined className="site-form-item-icon" />}
                             type={passwordVisible ? "text" : "password"}
-                            placeholder="Password"
+                            placeholder="Contraseña"
                             iconRender={visible => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                             onClick={togglePasswordVisibility}
                         />
                     </Form.Item>
                     <Form.Item>
                         <Form.Item name="remember" valuePropName="checked" noStyle>
-                            <Checkbox>Remember me</Checkbox>
+                            <Checkbox>Recuérdame</Checkbox>
                         </Form.Item>
-                        <a className="login-form-forgot" href="">
-                            Forgot password
-                        </a>
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="login-form-button">
-                            Log in
+                            Iniciar Sesión
                         </Button>
-                        Or <a href="/register">register now!</a>
                     </Form.Item>
                 </Form>
             </div>

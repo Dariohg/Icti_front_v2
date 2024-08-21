@@ -42,6 +42,7 @@ const expandedRowRender = (record) => {
 const Enlaces = () => {
     const navigate = useNavigate();
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+    const [originalData, setOriginalData] = useState([]); // Estado para los datos originales
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
 
@@ -64,7 +65,9 @@ const Enlaces = () => {
                 cargo: enlace.cargoEnlace.nombreCargo,
                 contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
             }));
-            setFilteredData(enlacesMapped);
+
+            setOriginalData(enlacesMapped); // Guardar los datos originales
+            setFilteredData(enlacesMapped); // Inicialmente, filteredData es igual a originalData
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -92,10 +95,16 @@ const Enlaces = () => {
     const handleSearch = (e) => {
         const { value } = e.target;
         setSearchText(value);
-        const filtered = filteredData.filter((item) =>
-            item.nombre.toLowerCase().includes(value.toLowerCase())
-        );
-        setFilteredData(filtered);
+
+        if (value) {
+            const filtered = originalData.filter((item) =>
+                item.nombre.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredData(filtered);
+        } else {
+            // Si no hay texto en la búsqueda, restaurar los datos originales
+            setFilteredData(originalData);
+        }
     };
 
     const columns = [
