@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Tag, Space, Typography } from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import moment from 'moment';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 const expandedRowRender = (record) => {
     const subTableColumns = [
-        { title: 'Fecha de contrato', dataIndex: 'fechaContrato', key: 'fechaContrato' },
-        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion' },
-        { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato' },
-        { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato' },
+        {
+            title: 'Fecha de contrato',
+            dataIndex: 'fechaContrato',
+            key: 'fechaContrato',
+            render: (text) => moment(text).format('YYYY-MM-DD'), // Formatear la fecha sin la hora
+            align: 'center', // Centrar contenido
+        },
+        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion', align: 'center' },
+        { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center' },
+        { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato', align: 'center' },
         {
             title: 'Estatus',
             dataIndex: 'estatus',
@@ -21,6 +28,7 @@ const expandedRowRender = (record) => {
                     {estatus === 1 ? 'ACTIVO' : 'INACTIVO'}
                 </Tag>
             ),
+            align: 'center',
         },
     ];
 
@@ -31,7 +39,7 @@ const expandedRowRender = (record) => {
         <>
             <Table columns={subTableColumns} dataSource={limitedData} pagination={false} />
             {hasMore && (
-                <Text type="secondary" style={{ marginTop: '10px', display: 'block' }}>
+                <Text type="secondary" style={{ marginTop: '10px', display: 'block', textAlign: 'center' }}>
                     Hay más información disponible. Haz clic en "Ver" para ver la información completa.
                 </Text>
             )}
@@ -42,7 +50,7 @@ const expandedRowRender = (record) => {
 const Enlaces = () => {
     const navigate = useNavigate();
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-    const [originalData, setOriginalData] = useState([]); // Estado para los datos originales
+    const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
 
@@ -63,11 +71,11 @@ const Enlaces = () => {
                 direccion: enlace.direccion.nombre,
                 adscripcion: enlace.departamento.nombreDepartamento,
                 cargo: enlace.cargoEnlace.nombreCargo,
-                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
+                contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`),
             }));
 
-            setOriginalData(enlacesMapped); // Guardar los datos originales
-            setFilteredData(enlacesMapped); // Inicialmente, filteredData es igual a originalData
+            setOriginalData(enlacesMapped);
+            setFilteredData(enlacesMapped);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -102,7 +110,6 @@ const Enlaces = () => {
             );
             setFilteredData(filtered);
         } else {
-            // Si no hay texto en la búsqueda, restaurar los datos originales
             setFilteredData(originalData);
         }
     };
@@ -112,52 +119,62 @@ const Enlaces = () => {
             title: 'Nombre',
             dataIndex: 'nombre',
             key: 'nombre',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Correo Electrónico',
             dataIndex: 'correo',
             key: 'correo',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Número de Teléfono',
             dataIndex: 'telefono',
             key: 'telefono',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Dependencia',
             dataIndex: 'dependencia',
             key: 'dependencia',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Dirección',
             dataIndex: 'direccion',
             key: 'direccion',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Adscripción',
             dataIndex: 'adscripcion',
             key: 'adscripcion',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Cargo',
             dataIndex: 'cargo',
             key: 'cargo',
+            align: 'center', // Centrar contenido
         },
         {
             title: 'Acción',
             key: 'action',
             render: (text, record) => (
-                <Space size="middle">
+                <Space size="middle" align="center">
                     <Button type="link" icon={<EyeOutlined />} onClick={() => navigate(`/viewEnlace/${record.key}`)}>
                         Ver
                     </Button>
                 </Space>
             ),
+            align: 'center', // Centrar contenido
         },
     ];
 
     return (
         <div>
+            <Title level={2}>Enlaces</Title>
+            <Divider style={{ marginTop: '20px' }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
                 <Input
                     placeholder="Buscar por nombre"
@@ -176,7 +193,7 @@ const Enlaces = () => {
                 }}
                 dataSource={filteredData}
                 rowKey="key"
-                pagination={{ position: ['bottomRight'] }}
+                pagination={{ position: ['bottomRight'], pageSize: 10 }}
                 bordered
             />
         </div>

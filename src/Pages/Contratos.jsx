@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Input } from 'antd';
+import { Table, Button, Input, Divider, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined } from '@ant-design/icons';
+
+const { Title } = Typography; // Extraer Title desde Typography
 
 const Contratos = () => {
     const navigate = useNavigate();
@@ -90,7 +92,8 @@ const Contratos = () => {
 
     return (
         <div>
-            <h1>Contratos Registrados</h1>
+            <Title level={2}>Enlaces</Title> {/* Título corregido */}
+            <Divider style={{ marginTop: '20px' }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
                 <Input
                     placeholder="Buscar por cliente"

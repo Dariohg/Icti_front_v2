@@ -5,17 +5,37 @@
     width: 100%;
     top: 0;
     z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    width: 80px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .logo {
-    width: 120px;
-    height: 31px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 16px 24px 16px 0;
-    float: left;
+    max-height: 100%;
+    max-width: 100%; 
+    object-fit: contain;
 }
 
-/* Ajustar el contenido para dejar espacio al Header fijo */
 .ant-layout-content {
     margin-top: 64px; /* La altura del Header */
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+/* Ajustar el menú */
+.ant-menu-horizontal {
+    line-height: 64px; /* Asegura que el menú esté alineado con el header */
+    flex: 1;
 }
