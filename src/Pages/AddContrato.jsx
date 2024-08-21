@@ -94,7 +94,7 @@ const AddContrato = () => {
                     persona_id: cliente,
                     estatus: 1, // Puedes ajustar este valor según sea necesario
                     descripcion: values.descripcion,
-                    fechaContrato: values.fechaContrato.format('YYYY-MM-DD'),
+                    fechaContrato: values.fechaContrato.format('YYYY-MM-DD'), // Formateando la fecha correctamente
                     id_user: 1, // Ajusta el valor del usuario según sea necesario
                     id_versionContrato: versionContrato,
                     ubicacion: tipoInstalacion, // Ajusta la ubicación según corresponda
@@ -114,6 +114,7 @@ const AddContrato = () => {
                 console.log('Validación fallida:', info);
             });
     };
+
 
     const handleCancel = () => {
         navigate('/listarContratos');

@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import { Drawer, Form, Button, Col, Row, Input, Select, DatePicker, Space } from 'antd';
+import { Drawer, Form, Button, Col, Row, Input, Select, DatePicker, Space, Popconfirm } from 'antd';
+import { CloseOutlined, DeleteOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
 
-const EditContractDrawer = ({ contrato, visible, onClose, onSave }) => {
+const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) => {
     const [form] = Form.useForm();
 
-    // Cargar los datos del contrato en el formulario cuando se abre el Drawer
     useEffect(() => {
         if (visible && contrato) {
             form.setFieldsValue({
@@ -29,7 +29,7 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave }) => {
                     fechaContrato: values.fechaContrato ? values.fechaContrato.format('YYYY-MM-DD') : null,
                 };
                 onSave({ ...contrato, ...updatedValues });
-                form.resetFields();  // Reinicia los campos del formulario después de guardar
+                form.resetFields();
             })
             .catch(info => {
                 console.log('Validate Failed:', info);
@@ -37,25 +37,42 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave }) => {
     };
 
     const handleClose = () => {
-        form.resetFields();  // Reinicia los campos del formulario al cerrar el Drawer
-        onClose();  // Cierra el Drawer
+        form.resetFields();
+        onClose();
     };
 
     return (
         <Drawer
             title="Editar contrato"
             width={600}
-            onClose={handleClose} // Usar la función handleClose para cerrar el Drawer
+            onClose={handleClose}
             visible={visible}
             bodyStyle={{ paddingBottom: 80 }}
             extra={
                 <Space>
-                    <Button onClick={handleClose}>Cancelar</Button>
-                    <Button onClick={handleSave} type="primary">
+                    <Button danger onClick={handleClose} icon={<CloseOutlined />}>Cancelar</Button>
+                    <Button onClick={handleSave} type="primary" icon={<CheckOutlined />}>
                         Guardar
                     </Button>
                 </Space>
             }
+            footer={
+                <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 24px' }}>
+                    <Popconfirm
+                        title="¿Estás seguro de que deseas eliminar este contrato?"
+                        icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                        onConfirm={onDelete}
+                        okText="Sí"
+                        cancelText="No"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Button danger icon={<DeleteOutlined />} style={{ width: '225px' }}>
+                            Eliminar contrato
+                        </Button>
+                    </Popconfirm>
+                </div>
+            }
+            footerStyle={{ padding: 0 }}
         >
             <Form layout="vertical" form={form}>
                 <Row gutter={16}>
