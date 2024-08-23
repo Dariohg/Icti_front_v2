@@ -71,7 +71,7 @@ const Enlaces = () => {
 
             console.log(enlacesData);
 
-            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos`);
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`);
             const contratosData = contratosResponse.data.contratos;
 
             console.log("contratos data",contratosData);
