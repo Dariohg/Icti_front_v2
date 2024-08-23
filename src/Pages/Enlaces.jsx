@@ -1,17 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Tag, Space, Typography } from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import moment from 'moment';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
+const { Option } = Select;
+
+const serviceOptions = [
+    'Servicios de Hosting',
+    'Servicios de Maquinas Virtuales',
+    'Servicios de Telefonia',
+    'Servicios de Internet',
+    'RIG'
+];
 
 const expandedRowRender = (record) => {
     const subTableColumns = [
-        { title: 'Fecha de contrato', dataIndex: 'fechaContrato', key: 'fechaContrato' },
-        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion' },
-        { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato' },
-        { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato' },
+        {
+            title: 'Fecha de contrato',
+            dataIndex: 'fechaContrato',
+            key: 'fechaContrato',
+            render: (text) => moment(text).format('YYYY-MM-DD'),
+            align: 'center',
+        },
+        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion', align: 'center' },
+        {title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center',},
+        { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato', align: 'center' },
         {
             title: 'Estatus',
             dataIndex: 'estatus',
@@ -21,6 +37,7 @@ const expandedRowRender = (record) => {
                     {estatus === 1 ? 'ACTIVO' : 'INACTIVO'}
                 </Tag>
             ),
+            align: 'center',
         },
     ];
 
@@ -31,7 +48,7 @@ const expandedRowRender = (record) => {
         <>
             <Table columns={subTableColumns} dataSource={limitedData} pagination={false} />
             {hasMore && (
-                <Text type="secondary" style={{ marginTop: '10px', display: 'block' }}>
+                <Text type="secondary" style={{ marginTop: '10px', display: 'block', textAlign: 'center' }}>
                     Hay más información disponible. Haz clic en "Ver" para ver la información completa.
                 </Text>
             )}
@@ -42,9 +59,10 @@ const expandedRowRender = (record) => {
 const Enlaces = () => {
     const navigate = useNavigate();
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-    const [originalData, setOriginalData] = useState([]); // Estado para los datos originales
+    const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [selectedServices, setSelectedServices] = useState([]);
 
     const fetchData = async () => {
         try {
@@ -71,8 +89,8 @@ const Enlaces = () => {
                 contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id), // Filtra los contratos por persona
             }));
 
-            setOriginalData(enlacesMapped); // Guardar los datos originales
-            setFilteredData(enlacesMapped); // Inicialmente, filteredData es igual a originalData
+            setOriginalData(enlacesMapped);
+            setFilteredData(enlacesMapped);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -100,16 +118,30 @@ const Enlaces = () => {
     const handleSearch = (e) => {
         const { value } = e.target;
         setSearchText(value);
+        filterData(value, selectedServices);
+    };
 
-        if (value) {
-            const filtered = originalData.filter((item) =>
-                item.nombre.toLowerCase().includes(value.toLowerCase())
+    const handleServiceChange = (value) => {
+        setSelectedServices(value);
+        filterData(searchText, value);
+    };
+
+    const filterData = (searchText, selectedServices) => {
+        let filtered = originalData;
+
+        if (searchText) {
+            filtered = filtered.filter((item) =>
+                item.nombre.toLowerCase().includes(searchText.toLowerCase())
             );
-            setFilteredData(filtered);
-        } else {
-            // Si no hay texto en la búsqueda, restaurar los datos originales
-            setFilteredData(originalData);
         }
+
+        if (selectedServices.length > 0) {
+            filtered = filtered.filter((item) =>
+                item.contratos.some(contrato => selectedServices.includes(contrato.tipoContrato))
+            );
+        }
+
+        setFilteredData(filtered);
     };
 
     const columns = [
@@ -117,53 +149,74 @@ const Enlaces = () => {
             title: 'Nombre',
             dataIndex: 'nombre',
             key: 'nombre',
+            align: 'center',
         },
         {
             title: 'Correo Electrónico',
             dataIndex: 'correo',
             key: 'correo',
+            align: 'center',
         },
         {
             title: 'Número de Teléfono',
             dataIndex: 'telefono',
             key: 'telefono',
+            align: 'center',
         },
         {
             title: 'Dependencia',
             dataIndex: 'dependencia',
             key: 'dependencia',
+            align: 'center',
         },
         {
             title: 'Dirección',
             dataIndex: 'direccion',
             key: 'direccion',
+            align: 'center',
         },
         {
             title: 'Adscripción',
             dataIndex: 'adscripcion',
             key: 'adscripcion',
+            align: 'center',
         },
         {
             title: 'Cargo',
             dataIndex: 'cargo',
             key: 'cargo',
+            align: 'center',
         },
         {
             title: 'Acción',
             key: 'action',
             render: (text, record) => (
-                <Space size="middle">
+                <Space size="middle" align="center">
                     <Button type="link" icon={<EyeOutlined />} onClick={() => navigate(`/viewEnlace/${record.key}`)}>
                         Ver
                     </Button>
                 </Space>
             ),
+            align: 'center',
         },
     ];
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            <Title level={2}>Enlaces</Title>
+            <Divider style={{ marginTop: '20px' }} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+                <Select
+                    mode="multiple"
+                    placeholder="Filtrar por tipo de servicio"
+                    onChange={handleServiceChange}
+                    style={{ width: 300, marginRight: '10px' }}
+                    allowClear
+                >
+                    {serviceOptions.map(option => (
+                        <Option key={option} value={option}>{option}</Option>
+                    ))}
+                </Select>
                 <Input
                     placeholder="Buscar por nombre"
                     value={searchText}
@@ -181,7 +234,7 @@ const Enlaces = () => {
                 }}
                 dataSource={filteredData}
                 rowKey="key"
-                pagination={{ position: ['bottomRight'] }}
+                pagination={{ position: ['bottomRight'], pageSize: 10 }}
                 bordered
             />
         </div>

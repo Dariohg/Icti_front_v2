@@ -9,7 +9,7 @@ import AddEnlace from './Pages/AddEnlace';
 import ViewEnlace from './Pages/ViewEnlace';
 import AddContrato from './Pages/AddContrato';
 import Contratos from './Pages/Contratos';
-import NotFound from "./components/NotFound";  // Nueva importación
+import NotFound from "./components/NotFound";
 
 function App() {
     return (
