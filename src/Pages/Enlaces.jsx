@@ -48,7 +48,7 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`);
             const enlacesData = response.data.enlaces;
 
             console.log(enlacesData);
@@ -63,10 +63,10 @@ const Enlaces = () => {
                 nombre: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`,
                 correo: enlace.correo,
                 telefono: enlace.telefono,
-                dependencia: enlace.direccion.dependencia.nombreCorto,
-                direccion: enlace.direccion.nombre,
-                adscripcion: enlace.departamento.nombreDepartamento,
-                cargo: enlace.cargoEnlace.nombreCargo,
+                dependencia: enlace.dependencia,
+                direccion: enlace.direccion,
+                adscripcion: enlace.adscripcion,
+                cargo: enlace.cargo,
                 // contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
                 contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id), // Filtra los contratos por persona
             }));
