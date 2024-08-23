@@ -169,12 +169,52 @@ const ViewEnlace = () => {
         }
     };
 
+    const fetchContracts = async () => {
+        try {
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`);
+            const contratos = contratosResponse.data.contrato;
+
+            const contratosMapped = contratos.map(contrato => ({
+                key: contrato.id,
+                fechaContrato: contrato.fechaContrato.slice(0, 10),
+                tipoInstalacion: contrato.ubicacion,
+                tipoContrato: contrato.tipoContrato,
+                versionContrato: contrato.versionContrato,
+                estatus: contrato.estatus === 1 ? 'Activo' : 'Inactivo',
+                descripcion: contrato.descripcion,
+            }));
+
+            setEnlaceData(prevState => ({ ...prevState, contratos: contratosMapped }));
+        } catch (error) {
+            console.error('Error al obtener los contratos:', error);
+            message.error('Hubo un error al obtener los contratos.');
+        }
+    };
+
     const handleSaveContract = async (updatedContract) => {
         const updatedContracts = enlaceData.contratos.map(contract =>
             contract.key === updatedContract.key ? updatedContract : contract
         );
         setEnlaceData(prevState => ({ ...prevState, contratos: updatedContracts }));
+        await fetchContracts(); // Recarga la lista de contratos después de guardar
         setDrawerVisible(false);
+    };
+
+    const handleDeleteContract = async (id) => {
+        try {
+            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`);
+            if (response.status === 200) {
+                setEnlaceData(prevState => ({
+                    ...prevState,
+                    contratos: prevState.contratos.filter(contrato => contrato.key !== id),
+                }));
+                setDrawerVisible(false);
+            } else {
+                message.error('Error al eliminar el contrato.');
+            }
+        } catch (error) {
+            message.error('Error al eliminar el contrato. Por favor, inténtalo de nuevo.');
+        }
     };
 
     const contratoColumns = [
@@ -201,13 +241,21 @@ const ViewEnlace = () => {
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Button icon={<EditOutlined />} onClick={() => { setSelectedContract(record); setDrawerVisible(true); }}>
+                    <Button
+                        icon={<EditOutlined />}
+                        onClick={() => {
+                            console.log('Contrato seleccionado:', record); // Agrega un log para verificar el contrato seleccionado
+                            setSelectedContract(record);
+                            setDrawerVisible(true);
+                        }}
+                    >
                         Editar
                     </Button>
                 </Space>
             ),
         },
     ];
+
 
     const expandedRowRender = (record) => (
         <Text>{record.descripcion}</Text>
@@ -397,7 +445,16 @@ const ViewEnlace = () => {
                 visible={drawerVisible}
                 onClose={() => setDrawerVisible(false)}
                 onSave={handleSaveContract}
+                onDelete={() => {
+                    if (selectedContract && selectedContract.key) {
+                        console.log('Eliminando contrato con ID:', selectedContract.key);
+                        handleDeleteContract(selectedContract.key);
+                    } else {
+                        message.error('No se puede eliminar el contrato. ID no definido.');
+                    }
+                }}
             />
+
         </>
     );
 };

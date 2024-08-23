@@ -1,16 +1,66 @@
-import React from 'react';
-import { Form, Input, Button, Row, Col, Select } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button, Row, Col, Select, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../Styles/register.css'; // Importar estilos personalizados
 
 const { Option } = Select;
 
 const Register = () => {
-    const navigate = useNavigate();
 
-    const onFinish = (values) => {
-        console.log('Valores recibidos del formulario: ', values);
+    const navigate = useNavigate();
+    const [departamentos, setDepartamentos] = useState([]);
+    const [cargos, setCargos] = useState([]);
+
+    useEffect(() => {
+        const fetchDepartamentos = async () => {
+            try {
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos`);
+                setDepartamentos(data.departamentos || []);
+            } catch (error) {
+                console.error('Error fetching departamentos:', error);
+                setDepartamentos([]);
+            }
+        };
+
+        const fetchCargos = async () => {
+            try {
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`);
+                setCargos(data.cargos || []);
+            } catch (error) {
+                console.error('Error fetching cargos:', error);
+                setCargos([]);
+            }
+        };
+
+        fetchDepartamentos();
+        fetchCargos();
+    }, []);
+
+    const onFinish = async (values) => {
+        // Estructura de los datos que la API espera
+        const dataToSend = {
+            nombre: values.nombre,
+            apellidoP: values.apellidoPaterno,
+            apellidoM: values.apellidoMaterno,
+            correo: values.correo,
+            telefono: values.telefono,
+            cargoAdministrativo: values.cargo, // Asumiendo que values.cargo es el ID del cargo
+            departamento: values.departamento, // Asumiendo que values.departamento es el ID del departamento
+            password: values.password,
+            username: values.username,
+            superuser: values.isSuperUser === 'yes' ? 1 : 0, // Convertir 'yes' a 1 y 'no' a 0
+        };
+
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/register`, dataToSend);
+            message.success('Usuario registrado exitosamente');
+            navigate('/home'); // Redirige a la página de inicio después del registro exitoso
+        } catch (error) {
+            console.error('Error al registrar el usuario:', error);
+            message.error('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+        }
     };
 
     const validatePasswords = ({ getFieldValue }) => ({
@@ -60,9 +110,22 @@ const Register = () => {
                             </Form.Item>
                             <Form.Item
                                 name="cargo"
-                                rules={[{ required: true, message: '¡Por favor ingresa tu cargo!' }]}
+                                rules={[{ required: true, message: '¡Por favor selecciona tu cargo!' }]}
                             >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Cargo" />
+                                <Select
+                                    showSearch
+                                    placeholder="Selecciona un cargo"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {Array.isArray(cargos) && cargos.map(cargo => (
+                                        <Option key={cargo.id} value={cargo.id}>
+                                            {cargo.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
                             <Form.Item
                                 name="username"
@@ -95,10 +158,24 @@ const Register = () => {
                             </Form.Item>
                             <Form.Item
                                 name="departamento"
-                                rules={[{ required: true, message: '¡Por favor ingresa tu departamento!' }]}
+                                rules={[{ required: true, message: '¡Por favor selecciona tu departamento!' }]}
                             >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Departamento" />
+                                <Select
+                                    showSearch
+                                    placeholder="Selecciona un departamento"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {Array.isArray(departamentos) && departamentos.map(depto => (
+                                        <Option key={depto.id} value={depto.id}>
+                                            {depto.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
+
                             <Form.Item
                                 name="password"
                                 rules={[{ required: true, message: '¡Por favor ingresa tu contraseña!' }]}
