@@ -36,14 +36,14 @@ const ViewEnlace = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`);
-                const enlace = enlaceResponse.data;
+                const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados/completo/${id}`);
+                const enlace = enlaceResponse.data.enlace;
 
-                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contrato/byId/${id}`);
-                const contratos = contratosResponse.data;
+                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`);
+                const contratos = contratosResponse.data.contrato;
 
                 const contratosMapped = contratos.map(contrato => ({
-                    key: contrato.idContrato,
+                    key: contrato.id,
                     fechaContrato: contrato.fechaContrato.slice(0, 10), // Mostrar solo la fecha
                     tipoInstalacion: contrato.ubicacion,
                     tipoContrato: contrato.tipoContrato,
@@ -59,15 +59,15 @@ const ViewEnlace = () => {
                     apellidoMaterno: enlace.apellidoM,
                     correo: enlace.correo,
                     telefono: enlace.telefono,
-                    dependencia: enlace.direccion.dependencia.idDependencia, // El ID de la dependencia
-                    direccion: enlace.direccion.idDireccion, // El ID de la dirección
-                    adscripcion: enlace.departamento.idDepartamento, // El ID del departamento
-                    cargo: enlace.cargoEnlace.idCargo, // El ID del cargo
+                    dependencia: enlace.dependenciaId, // El ID de la dependencia
+                    direccion: enlace.direccionId, // El ID de la dirección
+                    adscripcion: enlace.adscripcionId, // El ID del departamento
+                    cargo: enlace.cargoId, // El ID del cargo
                     contratos: contratosMapped,
                 });
 
                 // Cargar opciones de dropdowns
-                await loadDropdownOptions(enlace.direccion.dependencia.idDependencia, enlace.direccion.idDireccion);
+                await loadDropdownOptions(enlace.dependenciaId, enlace.direccionId);
             } catch (error) {
                 console.error('Error al obtener los datos del enlace:', error);
                 message.error('Hubo un error al obtener los datos del enlace.');
@@ -80,20 +80,20 @@ const ViewEnlace = () => {
     const loadDropdownOptions = async (dependenciaId, direccionId) => {
         try {
             const [dependenciasRes, cargosRes] = await Promise.all([
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencia/`),
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargo/`),
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`),
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`),
             ]);
-            setDependenciaOptions(dependenciasRes.data);
-            setCargoOptions(cargosRes.data);
+            setDependenciaOptions(dependenciasRes.data.dependencias);
+            setCargoOptions(cargosRes.data.cargos);
 
             // Cargar direcciones y departamentos en cascada
             if (dependenciaId) {
-                const direccionesRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direccion/direccionById?dependencia_id=${dependenciaId}`);
-                setDireccionOptions(direccionesRes.data);
+                const direccionesRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+                setDireccionOptions(direccionesRes.data.direcciones);
 
                 if (direccionId) {
-                    const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamento/departamentoById?id_direccion=${direccionId}`);
-                    setDepartamentoOptions(departamentosRes.data);
+                    const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+                    setDepartamentoOptions(departamentosRes.data.departamentos);
                 }
             }
         } catch (error) {
@@ -110,8 +110,8 @@ const ViewEnlace = () => {
         }));
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direccion/direccionById?dependencia_id=${value}`);
-            setDireccionOptions(response.data);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${value}`);
+            setDireccionOptions(response.data.direcciones);
             setDepartamentoOptions([]); // Limpiar adscripciones hasta que se seleccione una nueva dirección
         } catch (error) {
             console.error('Error al obtener las direcciones:', error);
@@ -126,7 +126,7 @@ const ViewEnlace = () => {
         }));
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamento/departamentoById?id_direccion=${value}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${value}`);
             setDepartamentoOptions(response.data);
         } catch (error) {
             console.error('Error al obtener los departamentos:', error);
@@ -136,8 +136,16 @@ const ViewEnlace = () => {
     const handleSave = async () => {
         console.log('Datos al guardar:', enlaceData);
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URI}enlace/${id}`, enlaceData);
-            message.success('Enlace actualizado correctamente');
+            if(!enlaceData.nombre || !enlaceData.apellidoPaterno || !enlaceData.apellidoMaterno || !enlaceData.correo || !enlaceData.telefono || !enlaceData.dependencia || !enlaceData.direccion || !enlaceData.adscripcion || !enlaceData.cargo){
+                message.error('Todos los campos son obligatorios');
+                return;
+            }
+            const updateResponse = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, enlaceData);
+            if(updateResponse.status === 200){
+                message.success('Datos actualizados correctamente');
+            } else {
+                message.error('Error al actualizar los datos del enlace.');
+            }
             setEditable(false);
         } catch (error) {
             console.error('Error al guardar los datos del enlace:', error);
@@ -147,7 +155,7 @@ const ViewEnlace = () => {
 
     const handleDelete = async () => {
         try {
-            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URI}enlace/eliminar/${id}`, { estatus_id: 3 });
+            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, { estatus_id: 3 });
             if (response.status === 200) {
                 message.success('Enlace eliminado correctamente');
                 navigate('/enlaces');
@@ -269,7 +277,7 @@ const ViewEnlace = () => {
                                 value={enlaceData.dependencia}  // El valor es el ID de la dependencia
                                 onChange={(value) => handleDependenciaChange(value)}
                                 disabled={!editable}
-                                options={dependenciaOptions.map(dep => ({ value: dep.idDependencia, label: dep.nombreDependencia }))}
+                                options={dependenciaOptions.map(dep => ({ value: dep.id, label: dep.nombre }))}
                                 showSearch
                                 placeholder="Selecciona una dependencia"
                                 optionFilterProp="label"
@@ -287,7 +295,7 @@ const ViewEnlace = () => {
                                 value={enlaceData.direccion}  // El valor es el ID de la dirección
                                 onChange={(value) => handleDireccionChange(value)}
                                 disabled={!editable}
-                                options={direccionOptions.map(dir => ({ value: dir.idDireccion, label: dir.nombre }))}
+                                options={direccionOptions.map(dir => ({ value: dir.id, label: dir.nombre }))}
                                 showSearch
                                 placeholder="Selecciona una dirección"
                                 optionFilterProp="label"
@@ -303,7 +311,7 @@ const ViewEnlace = () => {
                                 value={enlaceData.adscripcion}  // El valor es el ID de la adscripción
                                 onChange={(value) => setEnlaceData({ ...enlaceData, adscripcion: value })}
                                 disabled={!editable}
-                                options={departamentoOptions.map(dep => ({ value: dep.idDepartamento, label: dep.nombreDepartamento }))}
+                                options={departamentoOptions.map(dep => ({ value: dep.id, label: dep.nombre }))}
                                 showSearch
                                 placeholder="Selecciona una adscripción"
                                 optionFilterProp="label"
@@ -321,7 +329,7 @@ const ViewEnlace = () => {
                                 value={enlaceData.cargo}  // El valor es el ID del cargo
                                 onChange={(value) => setEnlaceData({ ...enlaceData, cargo: value })}
                                 disabled={!editable}
-                                options={cargoOptions.map(cargo => ({ value: cargo.idCargo, label: cargo.nombreCargo }))}
+                                options={cargoOptions.map(cargo => ({ value: cargo.id, label: cargo.nombre }))}
                                 showSearch
                                 placeholder="Selecciona un cargo"
                                 optionFilterProp="label"
