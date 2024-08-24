@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Input, Divider, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
-const { Title } = Typography; // Extraer Title desde Typography
+const { Title } = Typography;
 
 const Contratos = () => {
     const navigate = useNavigate();
@@ -12,31 +13,30 @@ const Contratos = () => {
     const [filteredContracts, setFilteredContracts] = useState([]);
 
     useEffect(() => {
-        // Aquí puedes realizar una llamada al backend para obtener los datos de los contratos
-        // Por ahora, agregaremos datos ficticios como ejemplo
-        const mockData = [
-            {
-                key: '1',
-                cliente: 'Cliente 1',
-                tipoContrato: 'Tipo de Contrato 1',
-                fechaContrato: '2024-08-09',
-                versionContrato: 'Versión 1',
-                tipoInstalacion: 'Instalación 1',
-                descripcion: 'Descripción del contrato 1',
-            },
-            {
-                key: '2',
-                cliente: 'Cliente 2',
-                tipoContrato: 'Tipo de Contrato 2',
-                fechaContrato: '2024-08-10',
-                versionContrato: 'Versión 2',
-                tipoInstalacion: 'Instalación 2',
-                descripcion: 'Descripción del contrato 2',
-            },
-            // Agrega más datos según sea necesario
-        ];
-        setContracts(mockData);
-        setFilteredContracts(mockData);
+        const fetchContracts = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/contratos/detallados');
+                const contratos = response.data.contratos;
+
+                // Mapeamos los datos recibidos para que coincidan con las columnas de la tabla
+                const mappedContracts = contratos.map(contract => ({
+                    key: contract.id,
+                    cliente: `${contract.nombreEnlace} ${contract.apellidoPEnlace} ${contract.apellidoMEnlace}`,
+                    tipoContrato: contract.tipoContrato,
+                    fechaContrato: new Date(contract.fechaContrato).toLocaleDateString(),
+                    versionContrato: contract.versionContrato,
+                    tipoInstalacion: contract.ubicacion,
+                    descripcion: contract.descripcion,
+                }));
+
+                setContracts(mappedContracts);
+                setFilteredContracts(mappedContracts);
+            } catch (error) {
+                console.error('Error fetching contracts:', error);
+            }
+        };
+
+        fetchContracts();
     }, []);
 
     const handleSearch = (e) => {
@@ -92,7 +92,7 @@ const Contratos = () => {
 
     return (
         <div>
-            <Title level={2}>Enlaces</Title> {/* Título corregido */}
+            <Title level={2}>Contratos</Title>
             <Divider style={{ marginTop: '20px' }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
                 <Input
