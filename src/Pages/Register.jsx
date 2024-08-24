@@ -10,17 +10,25 @@ const { Option } = Select;
 const Register = () => {
 
     const navigate = useNavigate();
+    const [dependencias, setDependencias] = useState([]);
+    const [direcciones, setDirecciones] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [cargos, setCargos] = useState([]);
+    const [selectedDependencia, setSelectedDependencia] = useState(null);
+    const [selectedDireccion, setSelectedDireccion] = useState(null);
 
     useEffect(() => {
-        const fetchDepartamentos = async () => {
+        const fetchDependencias = async () => {
             try {
-                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos`);
-                setDepartamentos(data.departamentos || []);
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`);
+                const dependenciasMapped = data.dependencias.map(dep => ({
+                    value: dep.id,
+                    label: dep.nombre
+                }));
+                setDependencias(dependenciasMapped);
             } catch (error) {
-                console.error('Error fetching departamentos:', error);
-                setDepartamentos([]);
+                console.error('Error fetching dependencias:', error);
+                setDependencias([]);
             }
         };
 
@@ -34,29 +42,73 @@ const Register = () => {
             }
         };
 
-        fetchDepartamentos();
+        fetchDependencias();
         fetchCargos();
     }, []);
 
+    useEffect(() => {
+        if (selectedDependencia) {
+            getDirecciones(selectedDependencia);
+        } else {
+            setDirecciones([]);
+            setDepartamentos([]);
+        }
+    }, [selectedDependencia]);
+
+    useEffect(() => {
+        if (selectedDireccion) {
+            getDepartamentos(selectedDireccion);
+        } else {
+            setDepartamentos([]);
+        }
+    }, [selectedDireccion]);
+
+    const getDirecciones = async (dependenciaId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+            const direccionesMapped = response.data.direcciones.map(dir => ({
+                value: dir.id,
+                label: dir.nombre
+            }));
+            setDirecciones(direccionesMapped);
+        } catch (error) {
+            console.error("Error al obtener las direcciones:", error);
+            setDirecciones([]);
+        }
+    };
+
+    const getDepartamentos = async (direccionId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+            const departamentosMapped = response.data.departamentos.map(dep => ({
+                value: dep.id,
+                label: dep.nombre
+            }));
+            setDepartamentos(departamentosMapped);
+        } catch (error) {
+            console.error("Error al obtener departamentos:", error);
+            setDepartamentos([]);
+        }
+    };
+
     const onFinish = async (values) => {
-        // Estructura de los datos que la API espera
         const dataToSend = {
             nombre: values.nombre,
             apellidoP: values.apellidoPaterno,
             apellidoM: values.apellidoMaterno,
             correo: values.correo,
             telefono: values.telefono,
-            cargoAdministrativo: values.cargo, // Asumiendo que values.cargo es el ID del cargo
-            departamento: values.departamento, // Asumiendo que values.departamento es el ID del departamento
+            cargoAdministrativo: values.cargo,
+            departamento: values.departamento,
             password: values.password,
             username: values.username,
-            superuser: values.isSuperUser === 'yes' ? 1 : 0, // Convertir 'yes' a 1 y 'no' a 0
+            superuser: values.isSuperUser === 'yes' ? 1 : 0,
         };
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/register`, dataToSend);
             message.success('Usuario registrado exitosamente');
-            navigate('/home'); // Redirige a la página de inicio después del registro exitoso
+            navigate('/home');
         } catch (error) {
             console.error('Error al registrar el usuario:', error);
             message.error('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
@@ -73,7 +125,7 @@ const Register = () => {
     });
 
     const handleCancel = () => {
-        navigate('/home'); // Redirige a la página de inicio
+        navigate('/home');
     };
 
     return (
@@ -97,17 +149,104 @@ const Register = () => {
                         </Col>
                         <Col span={12}>
                             <Form.Item
+                                name="apellidoPaterno"
+                                rules={[{ required: true, message: '¡Por favor ingresa tu apellido paterno!' }]}
+                            >
+                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Apellido paterno" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
                                 name="apellidoMaterno"
                                 rules={[{ required: true, message: '¡Por favor ingresa tu apellido materno!' }]}
                             >
                                 <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Apellido materno" />
                             </Form.Item>
+                        </Col>
+                        <Col span={12}>
                             <Form.Item
                                 name="correo"
                                 rules={[{ required: true, message: '¡Por favor ingresa tu correo!', type: 'email' }]}
                             >
                                 <Input prefix={<MailOutlined className="site-form-item-icon" />} placeholder="Correo electrónico" />
                             </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="telefono"
+                                rules={[{ required: true, message: '¡Por favor ingresa tu número de teléfono!' }]}
+                            >
+                                <Input prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder="Número de teléfono" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="dependencia"
+                                rules={[{ required: true, message: '¡Por favor selecciona tu dependencia!' }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Selecciona una dependencia"
+                                    optionFilterProp="children"
+                                    onChange={value => setSelectedDependencia(value)}
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {Array.isArray(dependencias) && dependencias.map(dep => (
+                                        <Option key={dep.value} value={dep.value}>
+                                            {dep.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="direccion"
+                                rules={[{ required: true, message: '¡Por favor selecciona tu dirección!' }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Selecciona una dirección"
+                                    optionFilterProp="children"
+                                    onChange={value => setSelectedDireccion(value)}
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                    disabled={!selectedDependencia}
+                                >
+                                    {Array.isArray(direcciones) && direcciones.map(dir => (
+                                        <Option key={dir.value} value={dir.value}>
+                                            {dir.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="departamento"
+                                rules={[{ required: true, message: '¡Por favor selecciona tu departamento!' }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder="Selecciona un departamento"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                    disabled={!selectedDireccion}
+                                >
+                                    {Array.isArray(departamentos) && departamentos.map(dep => (
+                                        <Option key={dep.value} value={dep.value}>
+                                            {dep.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
                             <Form.Item
                                 name="cargo"
                                 rules={[{ required: true, message: '¡Por favor selecciona tu cargo!' }]}
@@ -127,55 +266,17 @@ const Register = () => {
                                     ))}
                                 </Select>
                             </Form.Item>
+                        </Col>
+                        <Col span={12}>
                             <Form.Item
                                 name="username"
                                 rules={[{ required: true, message: '¡Por favor ingresa tu nombre de usuario!' }]}
                             >
                                 <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Nombre de usuario" />
                             </Form.Item>
-                            <Form.Item
-                                name="isSuperUser"
-                                rules={[{ required: true, message: '¡Por favor selecciona si el usuario es superusuario!' }]}
-                            >
-                                <Select placeholder="Selecciona si es Superusuario">
-                                    <Option value="yes">Sí</Option>
-                                    <Option value="no">No</Option>
-                                </Select>
-                            </Form.Item>
                         </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="apellidoPaterno"
-                                rules={[{ required: true, message: '¡Por favor ingresa tu apellido paterno!' }]}
-                            >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Apellido paterno" />
-                            </Form.Item>
-                            <Form.Item
-                                name="telefono"
-                                rules={[{ required: true, message: '¡Por favor ingresa tu número de teléfono!' }]}
-                            >
-                                <Input prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder="Número de teléfono" />
-                            </Form.Item>
-                            <Form.Item
-                                name="departamento"
-                                rules={[{ required: true, message: '¡Por favor selecciona tu departamento!' }]}
-                            >
-                                <Select
-                                    showSearch
-                                    placeholder="Selecciona un departamento"
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                        option.children.toLowerCase().includes(input.toLowerCase())
-                                    }
-                                >
-                                    {Array.isArray(departamentos) && departamentos.map(depto => (
-                                        <Option key={depto.id} value={depto.id}>
-                                            {depto.nombre}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
 
+                        <Col span={12}>
                             <Form.Item
                                 name="password"
                                 rules={[{ required: true, message: '¡Por favor ingresa tu contraseña!' }]}
@@ -186,6 +287,19 @@ const Register = () => {
                                     placeholder="Contraseña"
                                 />
                             </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="isSuperUser"
+                                rules={[{ required: true, message: '¡Por favor selecciona si el usuario es superusuario!' }]}
+                            >
+                                <Select placeholder="Selecciona si es Superusuario" tabIndex={-1}>
+                                    <Option value="yes">Sí</Option>
+                                    <Option value="no">No</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
                             <Form.Item
                                 name="confirmPassword"
                                 dependencies={['password']}
