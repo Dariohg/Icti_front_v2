@@ -98,7 +98,7 @@ const Sidebar = ({ onCollapse }) => {
                             Listar Servicios
                         </Link>
                     </Menu.Item>
-                    <Menu.Item key="/agregarServicios">
+                    <Menu.Item key="/addServicio">
                         <Link to="/agregarServicios">
                             <PlusOutlined />
                             Agregar Servicios
