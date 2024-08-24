@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, Select, message } from 'antd';
+import { Form, Input, Button, Row, Col, Select, message, Tooltip } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,7 +8,6 @@ import '../Styles/register.css'; // Importar estilos personalizados
 const { Option } = Select;
 
 const Register = () => {
-
     const navigate = useNavigate();
     const [dependencias, setDependencias] = useState([]);
     const [direcciones, setDirecciones] = useState([]);
@@ -16,6 +15,42 @@ const Register = () => {
     const [cargos, setCargos] = useState([]);
     const [selectedDependencia, setSelectedDependencia] = useState(null);
     const [selectedDireccion, setSelectedDireccion] = useState(null);
+    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [passwordProgressVisible, setPasswordProgressVisible] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+
+    const handlePasswordChange = (e) => {
+        const value = e.target.value;
+
+        if (!value) {
+            setPasswordError(''); // Resetear el error si el campo está vacío
+            setPasswordProgressVisible(false);
+            return;
+        }
+
+        const lengthRule = value.length >= 8;
+        const capitalRule = /[A-Z]/.test(value);
+        const numberRule = /\d/.test(value);
+        const specialCharRule = /[@$!%*?&#]/.test(value);
+
+        let strength = 0;
+        if (lengthRule) strength += 25;
+        if (capitalRule) strength += 25;
+        if (numberRule) strength += 25;
+        if (specialCharRule) strength += 25;
+
+        setPasswordStrength(strength);
+        setPasswordProgressVisible(value.length > 0);
+
+        // Mensaje de error
+        if (!lengthRule) {
+            setPasswordError('La contraseña debe tener al menos 8 caracteres');
+        } else if (!capitalRule || !numberRule || !specialCharRule) {
+            setPasswordError('Debe contener al menos una mayúscula, un número y un carácter especial');
+        } else {
+            setPasswordError('');
+        }
+    };
 
     useEffect(() => {
         const fetchDependencias = async () => {
@@ -117,11 +152,17 @@ const Register = () => {
 
     const validatePasswords = ({ getFieldValue }) => ({
         validator(_, value) {
-            if (!value || getFieldValue('password') === value) {
+            const lengthRule = value && value.length >= 8;
+            const capitalRule = /[A-Z]/.test(value);
+            const numberRule = /\d/.test(value);
+            const specialCharRule = /[@$!%*?&#.]/.test(value);
+
+            if (lengthRule && capitalRule && numberRule && specialCharRule) {
                 return Promise.resolve();
             }
-            return Promise.reject(new Error('¡Las dos contraseñas no coinciden!'));
-        },
+
+            return Promise.reject();
+        }
     });
 
     const handleCancel = () => {
@@ -279,15 +320,46 @@ const Register = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="password"
-                                rules={[{ required: true, message: '¡Por favor ingresa tu contraseña!' }]}
+                                rules={[
+                                    {
+                                        validator: (_, value) => {
+                                            if (!value) {
+                                                setPasswordError('');
+                                                return Promise.reject('¡Por favor ingresa tu contraseña!');
+                                            }
+                                            if (passwordError) {
+                                                return Promise.reject(passwordError);
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    },
+                                ]}
                             >
-                                <Input
-                                    prefix={<LockOutlined className="site-form-item-icon" />}
-                                    type="password"
-                                    placeholder="Contraseña"
-                                />
+                                <Tooltip color={"red"} title={passwordError} visible={!!passwordError} placement="right">
+                                    <Input
+                                        prefix={<LockOutlined className="site-form-item-icon" />}
+                                        type="password"
+                                        placeholder="Contraseña"
+                                        onChange={handlePasswordChange}
+                                    />
+                                </Tooltip>
                             </Form.Item>
+                            {passwordProgressVisible && (
+                                <div style={{ marginTop: -12, marginBottom: 8 }}>
+                                    <div style={{ height: 2, background: '#e9e9e9', borderRadius: 2 }}>
+                                        <div
+                                            style={{
+                                                width: `${passwordStrength}%`,
+                                                background: passwordStrength < 50 ? '#ff4d4f' : passwordStrength < 75 ? '#faad14' : '#52c41a',
+                                                height: '100%',
+                                                borderRadius: 2,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </Col>
+
                         <Col span={12}>
                             <Form.Item
                                 name="isSuperUser"
