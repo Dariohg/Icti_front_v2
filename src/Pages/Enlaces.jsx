@@ -1,60 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Tag, Space, Typography, Divider, Select } from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
 
 const { Text, Title } = Typography;
+const { SHOW_PARENT } = TreeSelect;
 const { Option } = Select;
-
-const serviceOptions = [
-    'Servicios de Hosting',
-    'Servicios de Maquinas Virtuales',
-    'Servicios de Telefonia',
-    'Servicios de Internet',
-    'RIG'
-];
-
-const expandedRowRender = (record) => {
-    const subTableColumns = [
-        {
-            title: 'Fecha de contrato',
-            dataIndex: 'fechaContrato',
-            key: 'fechaContrato',
-            render: (text) => moment(text).format('YYYY-MM-DD'),
-            align: 'center',
-        },
-        { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion', align: 'center' },
-        {title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center',},
-        { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato', align: 'center' },
-        {
-            title: 'Estatus',
-            dataIndex: 'estatus',
-            key: 'estatus',
-            render: estatus => (
-                <Tag color={estatus === 1 ? 'green' : 'red'}>
-                    {estatus === 1 ? 'ACTIVO' : 'INACTIVO'}
-                </Tag>
-            ),
-            align: 'center',
-        },
-    ];
-
-    const limitedData = record.contratos.slice(0, 2);
-    const hasMore = record.contratos.length > 2;
-
-    return (
-        <>
-            <Table columns={subTableColumns} dataSource={limitedData} pagination={false} />
-            {hasMore && (
-                <Text type="secondary" style={{ marginTop: '10px', display: 'block', textAlign: 'center' }}>
-                    Hay más información disponible. Haz clic en "Ver" para ver la información completa.
-                </Text>
-            )}
-        </>
-    );
-};
 
 const Enlaces = () => {
     const navigate = useNavigate();
@@ -62,19 +15,67 @@ const Enlaces = () => {
     const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
-    const [selectedServices, setSelectedServices] = useState([]);
+    const [selectedTreeValues, setSelectedTreeValues] = useState([]);
+    const [treeData, setTreeData] = useState([]);
+    const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
+    const [selectedTipoInstalacion, setSelectedTipoInstalacion] = useState(null);
+
+    const fetchTipoContratos = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`);
+            const tipoContratos = response.data.tipoContrato;
+
+            const treeDataPromises = tipoContratos.map(async (tipoContrato) => {
+                if (tipoContrato.nombre === "Servicios de Telefonia" || tipoContrato.nombre === "Servicios de Internet" || tipoContrato.nombre === "RIG") {
+                    return {
+                        title: tipoContrato.nombre,
+                        value: tipoContrato.nombre,
+                        key: `tipo-${tipoContrato.id}`,
+                    };
+                } else {
+                    const versionesResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContrato.id}`);
+                    const versiones = versionesResponse.data.versiones.map(version => ({
+                        title: version.descripcion,
+                        value: version.descripcion,
+                        key: `version-${version.id}`,
+                    }));
+
+                    return {
+                        title: tipoContrato.nombre,
+                        value: tipoContrato.nombre,
+                        key: `tipo-${tipoContrato.id}`,
+                        children: versiones,
+                    };
+                }
+            });
+
+            const resolvedTreeData = await Promise.all(treeDataPromises);
+            setTreeData(resolvedTreeData);
+
+        } catch (error) {
+            console.error('Error al obtener los tipos de contrato:', error);
+            message.error('Hubo un error al obtener los tipos de contrato');
+        }
+    };
+
+    const fetchTipoInstalacion = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`);
+            const tipoInstalacion = response.data.tipoInstalacion;
+            setTipoInstalacionOptions(tipoInstalacion);
+        } catch (error) {
+            console.error('Error al obtener los tipos de instalación:', error);
+            message.error('Hubo un error al obtener los tipos de instalación');
+        }
+    };
 
     const fetchData = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`);
             const enlacesData = response.data.enlaces;
 
-            console.log(enlacesData);
-
             const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`);
             const contratosData = contratosResponse.data.contratos;
-
-            console.log("contratos data",contratosData);
 
             const enlacesMapped = enlacesData.map(enlace => ({
                 key: enlace.id,
@@ -85,8 +86,7 @@ const Enlaces = () => {
                 direccion: enlace.direccion,
                 adscripcion: enlace.adscripcion,
                 cargo: enlace.cargo,
-                // contratos: contratosData.filter(contrato => contrato.persona === `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`), // Filtra los contratos por persona
-                contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id), // Filtra los contratos por persona
+                contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id),
             }));
 
             setOriginalData(enlacesMapped);
@@ -98,6 +98,8 @@ const Enlaces = () => {
 
     useEffect(() => {
         fetchData();
+        fetchTipoContratos();
+        fetchTipoInstalacion();
     }, []);
 
     const handleExpand = (expanded, record) => {
@@ -118,30 +120,88 @@ const Enlaces = () => {
     const handleSearch = (e) => {
         const { value } = e.target;
         setSearchText(value);
-        filterData(value, selectedServices);
+        filterData(value, selectedTreeValues, selectedTipoInstalacion);
     };
 
-    const handleServiceChange = (value) => {
-        setSelectedServices(value);
-        filterData(searchText, value);
+    const handleTreeSelectChange = (value) => {
+        setSelectedTreeValues(value);
+        filterData(searchText, value, selectedTipoInstalacion);
     };
 
-    const filterData = (searchText, selectedServices) => {
+    const handleTipoInstalacionChange = (value) => {
+        setSelectedTipoInstalacion(value);
+        filterData(searchText, selectedTreeValues, value);
+    };
+
+    const filterData = (searchText, selectedTreeValues, selectedTipoInstalacion) => {
         let filtered = originalData;
 
+        // Filtrado por nombre
         if (searchText) {
             filtered = filtered.filter((item) =>
                 item.nombre.toLowerCase().includes(searchText.toLowerCase())
             );
         }
 
-        if (selectedServices.length > 0) {
+        // Filtrado por tipo de contrato y versión de contrato (todos deben coincidir)
+        if (selectedTreeValues.length > 0) {
             filtered = filtered.filter((item) =>
-                item.contratos.some(contrato => selectedServices.includes(contrato.tipoContrato))
+                selectedTreeValues.every(value =>
+                    item.contratos.some(contrato =>
+                        contrato.tipoContrato === value || contrato.versionContrato === value
+                    )
+                )
+            );
+        }
+
+        // Filtrado por tipo de instalación
+        if (selectedTipoInstalacion) {
+            filtered = filtered.filter((item) =>
+                item.contratos.some(contrato => contrato.ubicacion === selectedTipoInstalacion)
             );
         }
 
         setFilteredData(filtered);
+    };
+
+    const expandedRowRender = (record) => {
+        const subTableColumns = [
+            {
+                title: 'Fecha de contrato',
+                dataIndex: 'fechaContrato',
+                key: 'fechaContrato',
+                render: (text) => moment(text).format('YYYY-MM-DD'),
+                align: 'center',
+            },
+            { title: 'Tipo de instalación', dataIndex: 'ubicacion', key: 'ubicacion', align: 'center' },
+            { title: 'Tipo de contrato', dataIndex: 'tipoContrato', key: 'tipoContrato', align: 'center' },
+            { title: 'Versión de contrato', dataIndex: 'versionContrato', key: 'versionContrato', align: 'center' },
+            {
+                title: 'Estatus',
+                dataIndex: 'estatus',
+                key: 'estatus',
+                render: estatus => (
+                    <Tag color={estatus === 1 ? 'green' : 'red'}>
+                        {estatus === 1 ? 'ACTIVO' : 'INACTIVO'}
+                    </Tag>
+                ),
+                align: 'center',
+            },
+        ];
+
+        const limitedData = record.contratos.slice(0, 2);
+        const hasMore = record.contratos.length > 2;
+
+        return (
+            <>
+                <Table columns={subTableColumns} dataSource={limitedData} pagination={false} />
+                {hasMore && (
+                    <Text type="secondary" style={{ marginTop: '10px', display: 'block', textAlign: 'center' }}>
+                        Hay más información disponible. Haz clic en "Ver" para ver la información completa.
+                    </Text>
+                )}
+            </>
+        );
     };
 
     const columns = [
@@ -206,15 +266,24 @@ const Enlaces = () => {
             <Title level={2}>Enlaces</Title>
             <Divider style={{ marginTop: '20px' }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
-                <Select
-                    mode="multiple"
-                    placeholder="Filtrar por tipo de servicio"
-                    onChange={handleServiceChange}
+                <TreeSelect
+                    treeData={treeData}
+                    value={selectedTreeValues}
+                    onChange={handleTreeSelectChange}
+                    treeCheckable={true}
+                    showCheckedStrategy={SHOW_PARENT}
+                    placeholder="Filtrar por tipo de contrato"
                     style={{ width: 300, marginRight: '10px' }}
                     allowClear
+                />
+                <Select
+                    placeholder="Filtrar por tipo de instalación"
+                    onChange={handleTipoInstalacionChange}
+                    style={{ width: 200, marginRight: '10px' }}
+                    allowClear
                 >
-                    {serviceOptions.map(option => (
-                        <Option key={option} value={option}>{option}</Option>
+                    {tipoInstalacionOptions.map(option => (
+                        <Option key={option.id} value={option.nombre}>{option.nombre}</Option>
                     ))}
                 </Select>
                 <Input
