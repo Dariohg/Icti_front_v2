@@ -42,7 +42,6 @@ const Register = () => {
         setPasswordStrength(strength);
         setPasswordProgressVisible(value.length > 0);
 
-        // Mensaje de error
         if (!lengthRule) {
             setPasswordError('La contraseña debe tener al menos 8 caracteres');
         } else if (!capitalRule || !numberRule || !specialCharRule) {
@@ -335,7 +334,7 @@ const Register = () => {
                                     },
                                 ]}
                             >
-                                <Tooltip color={"red"} title={passwordError} visible={!!passwordError} placement="right">
+                                <Tooltip color={"red"} title={passwordError} visible={!!passwordError} placement="rightTop">
                                     <Input
                                         prefix={<LockOutlined className="site-form-item-icon" />}
                                         type="password"

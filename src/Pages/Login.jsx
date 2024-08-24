@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Checkbox } from 'antd';
+import { Form, Input, Button, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import '../Styles/login.css'; // Importar estilos personalizados
 import axios from 'axios';
 
 const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false);
+
     const handleLogin = async (values) => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/login`, 
+            const response = await axios.post(
+                `${process.env.REACT_APP_BACKEND_URI}usuarios/auth/login`,
                 values,
                 {
                     withCredentials: true,
@@ -19,8 +21,14 @@ const Login = () => {
             window.location.href = "/home";
         } catch (error) {
             console.error(error);
+            // Mostrar alerta si hay un error (como credenciales incorrectas)
+            if (error.response && error.response.status === 401) {
+                message.error('Nombre de usuario o contraseña incorrectos.');
+            } else {
+                message.error('Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo.');
+            }
         }
-    }
+    };
 
     const onFinish = (values) => {
         console.log('Received values of form: ', values);
