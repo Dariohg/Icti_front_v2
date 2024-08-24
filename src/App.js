@@ -10,6 +10,7 @@ import ViewEnlace from './Pages/ViewEnlace';
 import AddContrato from './Pages/AddContrato';
 import Contratos from './Pages/Contratos';
 import NotFound from "./components/NotFound";
+import AddServicios from "./Pages/AddServicios";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 <Route path="viewEnlace/:id" element={<Render><ViewEnlace /></Render>} />
                 <Route path="contratos" element={<Render><Contratos /></Render>} />
                 <Route path="addContrato" element={<Render><AddContrato /></Render>} />
+                <Route path="addServicio" element={<Render><AddServicios/></Render>}/>
 
                 <Route path="*" element={<NotFound />} /> {/* Ruta para páginas no encontradas */}
             </Routes>

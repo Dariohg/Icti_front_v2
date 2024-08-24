@@ -1,0 +1,54 @@
+.radio-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 20px;
+}
+
+.radio-with-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%; /* Para ocupar todo el ancho disponible */
+}
+
+.radio-with-label .ant-radio-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.radio-with-label .ant-radio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio-with-label .ant-radio-inner {
+    border-radius: 4px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio-with-label .ant-radio-inner::after {
+    display: none;
+}
+
+.radio-with-label .ant-radio-checked .ant-radio-inner {
+    background-color: #1890ff;
+    border-color: #1890ff;
+}
+
+/* Centrar los spans de los labels */
+.radio-with-label span {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
