@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, Popconfirm, Divider, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import {EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutlined} from '@ant-design/icons';
+
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';
 
 const { Text } = Typography;
+const { Title } = Typography;
 
 const ViewEnlace = () => {
     const { id } = useParams();
@@ -313,7 +315,21 @@ const ViewEnlace = () => {
 
     return (
         <>
-            <Form layout="vertical">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
+                <Title level={3} style={{ margin: 0 }}>Detalles del enlace</Title>
+                <Button
+                    type="text"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => navigate('/enlaces')}
+                >
+                    Volver
+                </Button>
+            </div>
+            <Divider/>
+
+            <Form layout="vertical"
+                  style={{ padding: '24px' }}
+            >
                 <Row gutter={24}>
                     <Col span={12}>
                         <Form.Item label="Nombre">
@@ -461,7 +477,7 @@ const ViewEnlace = () => {
                 </Row>
             </Form>
 
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ padding: '24px' }}>
                 <h3>Contratos</h3>
                 <Table
                     columns={contratoColumns}
@@ -473,7 +489,7 @@ const ViewEnlace = () => {
                 />
             </div>
 
-            <Divider style={{ marginTop: '40px' }} />
+            <Divider/>
 
             <div style={{ textAlign: 'center' }}>
                 <Popconfirm

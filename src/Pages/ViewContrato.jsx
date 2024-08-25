@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Row, Col, DatePicker, message, Select } from 'antd';
+import {Form, Input, Button, Row, Col, DatePicker, message, Select, Typography, Divider} from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
@@ -8,6 +9,7 @@ import EnlaceInfo from '../components/EnlaceInfo';  // Importa el componente
 
 const { TextArea } = Input;
 const { Option } = Select;
+const { Title } = Typography;
 
 const ViewContrato = () => {
     const navigate = useNavigate();
@@ -177,6 +179,17 @@ const ViewContrato = () => {
 
     return (
         <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
+                <Title level={3} style={{ margin: 0 }}>Detalles del contrato</Title>
+                <Button
+                    type="text"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => navigate('/contratos')}
+                >
+                    Volver
+                </Button>
+            </div>
+            <Divider/>
             <Form
                 form={form}
                 layout="vertical"
@@ -275,7 +288,7 @@ const ViewContrato = () => {
                 </Row>
             </Form>
             <div style={{ padding: '24px' }}>
-            {enlaceId && <EnlaceInfo  enlaceId={enlaceId} />}
+                {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
             </div>
         </>
     );
