@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
+import EnlaceInfo from '../components/EnlaceInfo';  // Importa el componente
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -19,6 +20,7 @@ const ViewContrato = () => {
     const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [optionsLoaded, setOptionsLoaded] = useState(false);
+    const [enlaceId, setEnlaceId] = useState(null);  // Estado para almacenar el ID del enlace asociado
 
     const token = Cookies.get('token');
 
@@ -40,7 +42,7 @@ const ViewContrato = () => {
 
     const fetchContrato = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/contratos/detallados/${id}`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -59,6 +61,7 @@ const ViewContrato = () => {
                     descripcion: contratoData.descripcion,
                 });
                 fetchVersionesContrato(tipoContrato.value);
+                setEnlaceId(contratoData.enlaceId);  // Establecer el ID del enlace
             }
 
             setLoading(false);
@@ -130,8 +133,6 @@ const ViewContrato = () => {
         fetchVersionesContrato(selectedValue);
     };
 
-
-
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
@@ -144,7 +145,7 @@ const ViewContrato = () => {
                 versionContrato: values.versionContrato,
             };
 
-            const response = await axios.put(`http://localhost:8000/contratos/detallados/${id}`, dataToSave, {
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/${id}`, dataToSave, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -175,103 +176,108 @@ const ViewContrato = () => {
     }
 
     return (
-        <Form
-            form={form}
-            layout="vertical"
-            style={{ padding: '24px' }}
-        >
-            <Row gutter={24}>
-                <Col span={24}>
-                    <Form.Item
-                        label="Cliente"
-                        name="cliente"
-                    >
-                        <Input disabled />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        label="Fecha de contrato"
-                        name="fechaContrato"
-                    >
-                        <DatePicker
-                            style={{ width: '100%' }}
-                            disabled={!isEditing}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        label="Tipo de contrato"
-                        name="tipoContrato"
-                    >
-                        <Select
-                            disabled={!isEditing}
-                            onChange={handleTipoContratoChange}
-                            options={tipoContratoOptions}
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={24}>
-                <Col span={12}>
-                    <Form.Item
-                        label="Tipo de instalación"
-                        name="tipoInstalacion"
-                    >
-                        <Select
-                            disabled={!isEditing}
-                            options={tipoInstalacionOptions}
-                        />
-                    </Form.Item>
-                </Col>
+        <>
+            <Form
+                form={form}
+                layout="vertical"
+                style={{ padding: '24px' }}
+            >
+                {/* Formulario de contrato aquí */}
+                <Row gutter={24}>
+                    <Col span={24}>
+                        <Form.Item
+                            label="Cliente"
+                            name="cliente"
+                        >
+                            <Input disabled />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Fecha de contrato"
+                            name="fechaContrato"
+                        >
+                            <DatePicker
+                                style={{ width: '100%' }}
+                                disabled={!isEditing}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Tipo de contrato"
+                            name="tipoContrato"
+                        >
+                            <Select
+                                disabled={!isEditing}
+                                onChange={handleTipoContratoChange}
+                                options={tipoContratoOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Tipo de instalación"
+                            name="tipoInstalacion"
+                        >
+                            <Select
+                                disabled={!isEditing}
+                                options={tipoInstalacionOptions}
+                            />
+                        </Form.Item>
+                    </Col>
 
-                <Col span={12}>
-                    <Form.Item
-                        label="Versión de Contrato"
-                        name="versionContrato"
-                    >
-                        <Select
-                            disabled={!isEditing}
-                            options={versionContratoOptions}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        label="Descripción"
-                        name="descripcion"
-                    >
-                        <TextArea
-                            rows={4}
-                            disabled={!isEditing}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    {!isEditing ? (
-                        <>
-                            <Button type="primary" onClick={() => setIsEditing(true)} style={{ flex: 1, marginRight: 8 }}>
-                                Actualizar
-                            </Button>
-                            <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                Volver
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
-                                Guardar
-                            </Button>
-                            <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                Cancelar
-                            </Button>
-                        </>
-                    )}
-                </Col>
-            </Row>
-
-        </Form>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Versión de Contrato"
+                            name="versionContrato"
+                        >
+                            <Select
+                                disabled={!isEditing}
+                                options={versionContratoOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Descripción"
+                            name="descripcion"
+                        >
+                            <TextArea
+                                rows={4}
+                                disabled={!isEditing}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {!isEditing ? (
+                            <>
+                                <Button type="primary" onClick={() => setIsEditing(true)} style={{ flex: 1, marginRight: 8 }}>
+                                    Actualizar
+                                </Button>
+                                <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                                    Volver
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
+                                    Guardar
+                                </Button>
+                                <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                                    Cancelar
+                                </Button>
+                            </>
+                        )}
+                    </Col>
+                </Row>
+            </Form>
+            <div style={{ padding: '24px' }}>
+            {enlaceId && <EnlaceInfo  enlaceId={enlaceId} />}
+            </div>
+        </>
     );
 };
 
