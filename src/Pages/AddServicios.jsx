@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio } from 'antd';
+import axios from 'axios';
 import moment from 'moment';
 import '../Styles/addServicios.css';  // Importar estilos personalizados
 
@@ -10,11 +11,17 @@ const AddServicios = () => {
     const [diagnosticoTipo, setDiagnosticoTipo] = useState(null);
     const [servicioTipo, setServicioTipo] = useState(null);
     const [estadoServicio, setEstadoServicio] = useState(null);
+    const [dependenciaOptions, setDependenciaOptions] = useState([]);
+    const [direccionOptions, setDireccionOptions] = useState([]);
+    const [cargoOptions, setCargoOptions] = useState([]);
+    const [token, setToken] = useState("tu_token_aqui");  // Suponiendo que el token ya está disponible
 
-    const onFinish = (values) => {
-        console.log('Formulario enviado: ', values);
-    };
+    useEffect(() => {
+        getDependencias();
+        getCargos();
+    }, []);
 
+    // Opciones para los selects de Diagnóstico, Tipo de Servicio, y Estado de Servicio
     const diagnosticoOptions = [
         'Asesoría',
         'Auditoría',
@@ -28,6 +35,73 @@ const AddServicios = () => {
     const servicioOptions = ['Instalación', 'Configuración'];
 
     const estadoOptions = ['Concluido', 'En seguimiento'];
+
+    const getDependencias = async () => {
+        try {
+            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
+            const dependencias = dependenciasRes.data.dependencias;
+            const dependenciasMapped = dependencias.map(dep => ({
+                value: dep.id,
+                label: dep.nombre
+            }));
+            setDependenciaOptions(dependenciasMapped);
+        } catch (error) {
+            console.error("Error al obtener dependencias:", error);
+        }
+    };
+
+    const getCargos = async () => {
+        try {
+            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
+            const cargos = cargosRes.data.cargos;
+            const cargosMapped = cargos.map(cargo => ({
+                value: cargo.id,
+                label: cargo.nombre
+            }));
+            setCargoOptions(cargosMapped);
+        } catch (error) {
+            console.error("Error al obtener los cargos:", error);
+        }
+    };
+
+    const getDirecciones = async (dependenciaId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
+            const direcciones = response.data.direcciones;
+            const direccionesMapped = direcciones.map(dir => ({
+                value: dir.id,
+                label: dir.nombre
+            }));
+            setDireccionOptions(direccionesMapped);
+        } catch (error) {
+            console.error("Error al obtener las direcciones:", error);
+        }
+    };
+
+    const onDependenciaChange = (value) => {
+        getDirecciones(value);
+    };
+
+    const onFinish = (values) => {
+        const formattedValues = {
+            ...values,
+            horaInicio: values.horaInicio.format('HH:mm'),
+            horaTermino: values.horaTermino.format('HH:mm'),
+        };
+        console.log('Formulario enviado: ', formattedValues);
+    };
 
     return (
         <Form
@@ -43,7 +117,7 @@ const AddServicios = () => {
         >
             <h2>Reporte de Servicio</h2>
             <Row gutter={16}>
-                <Col span={24}>
+                <Col span={12}>
                     <Form.Item
                         name="solicitante"
                         label="Solicitante"
@@ -52,16 +126,38 @@ const AddServicios = () => {
                         <Input placeholder="Nombre del solicitante" />
                     </Form.Item>
                 </Col>
+
                 <Col span={12}>
                     <Form.Item
                         name="dependencia"
                         label="Dependencia"
                         rules={[{ required: true, message: 'Por favor selecciona una dependencia' }]}
                     >
-                        <Select placeholder="Selecciona una dependencia">
-                            <Option value="dep1">Dependencia 1</Option>
-                            <Option value="dep2">Dependencia 2</Option>
-                        </Select>
+                        <Select
+                            placeholder="Selecciona una dependencia"
+                            showSearch
+                            onChange={onDependenciaChange}
+                            options={dependenciaOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item
+                        name="direccion"
+                        label="Direccion"
+                        rules={[{ required: true, message: 'Por favor selecciona una direccion' }]}
+                    >
+                        <Select
+                            placeholder="Selecciona una direccion"
+                            showSearch
+                            options={direccionOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -70,10 +166,14 @@ const AddServicios = () => {
                         label="Cargo"
                         rules={[{ required: true, message: 'Por favor selecciona un cargo' }]}
                     >
-                        <Select placeholder="Selecciona un cargo">
-                            <Option value="cargo1">Cargo 1</Option>
-                            <Option value="cargo2">Cargo 2</Option>
-                        </Select>
+                        <Select
+                            placeholder="Selecciona un cargo"
+                            showSearch
+                            options={cargoOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -100,7 +200,7 @@ const AddServicios = () => {
                         label="Hora de Inicio"
                         rules={[{ required: true, message: 'Por favor selecciona la hora de inicio' }]}
                     >
-                        <TimePicker style={{ width: '100%' }} />
+                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -109,7 +209,7 @@ const AddServicios = () => {
                         label="Hora de Término"
                         rules={[{ required: true, message: 'Por favor selecciona la hora de término' }]}
                     >
-                        <TimePicker style={{ width: '100%' }} />
+                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
