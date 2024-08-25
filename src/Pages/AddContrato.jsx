@@ -148,7 +148,7 @@ const AddContrato = () => {
     };
 
     const handleCancel = () => {
-        navigate('/listarContratos');
+        navigate('/contratos');
     };
 
     return (
@@ -235,12 +235,13 @@ const AddContrato = () => {
                 </Col>
             </Row>
             <Row gutter={24} justify="end">
-                <Col>
-                    <Button onClick={handleCancel} style={{ marginRight: 8 }}>
-                        Cancelar
+
+                <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={handleSave}>
+                        Agregar Contrato
                     </Button>
-                    <Button type="primary" onClick={handleSave}>
-                        Guardar
+                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                        Cancelar
                     </Button>
                 </Col>
             </Row>
