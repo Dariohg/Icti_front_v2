@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import CardServicios from '../components/CardServicios'; // Asegúrate de ajustar la ruta según tu estructura de carpetas
 import '../Styles/home.css';
-import { useEffect } from 'react';
 
 const Home = () => {
     useEffect(() => {

@@ -3,6 +3,7 @@ import { Form, Input, Button, Row, Col, DatePicker, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import axios from 'axios';
+import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
 
 const { TextArea } = Input;
 
@@ -20,6 +21,8 @@ const AddContrato = () => {
     const [versionContrato, setVersionContrato] = useState(null);
     const [tipoInstalacion, setTipoInstalacion] = useState(null);
 
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
+
     useEffect(() => {
         fetchClientes();
         fetchTipoContratos();
@@ -28,7 +31,11 @@ const AddContrato = () => {
 
     const fetchClientes = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const clientes = response.data.enlaces;
             const clientesMapped = clientes.map(cliente => ({
                 value: cliente.id,
@@ -43,7 +50,11 @@ const AddContrato = () => {
 
     const fetchTipoContratos = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const tiposContrato = response.data.tipoContrato;
             const tiposContratoMapped = tiposContrato.map(tipo => ({
                 value: tipo.id,
@@ -58,7 +69,11 @@ const AddContrato = () => {
 
     const fetchVersionesContrato = async (tipoContratoId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContratoId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContratoId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const versiones = response.data.versiones;
             const versionesMapped = versiones.map(version => ({
                 value: version.id,
@@ -73,7 +88,11 @@ const AddContrato = () => {
 
     const fetchTipoInstalacion = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const tipoInstalacion = response.data.tipoInstalacion;
             const tipoInstalacionMapped = tipoInstalacion.map(instalacion => ({
                 value: instalacion.id,
@@ -106,7 +125,11 @@ const AddContrato = () => {
                 };
 
                 try {
-                    const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}contratos`, dataToSave);
+                    const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}contratos`, dataToSave, {
+                        headers: {
+                            Authorization: `Bearer ${token}` // Agregar el token en los headers
+                        }
+                    });
                     if (response.status !== 201) {
                         message.error('Error al crear el contrato');
                         throw new Error('Error al crear el contrato');
@@ -123,7 +146,6 @@ const AddContrato = () => {
                 console.log('Validación fallida:', info);
             });
     };
-
 
     const handleCancel = () => {
         navigate('/listarContratos');

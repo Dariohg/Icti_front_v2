@@ -3,8 +3,8 @@ import { Table, Button, Input, Divider, Typography, Row, Col, Tooltip, message }
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, CopyOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import '../Styles/contrato.css'; // Asegúrate de importar el archivo CSS
-
 
 const { Title, Text } = Typography;
 
@@ -17,9 +17,15 @@ const Contratos = () => {
     const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
     useEffect(() => {
+        const token = Cookies.get('token'); // Obtener el token desde las cookies
+
         const fetchContracts = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/contratos/detallados');
+                const response = await axios.get('http://localhost:8000/contratos/detallados', {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 const contratos = response.data.contratos;
 
                 const mappedContracts = contratos.map(contract => ({
@@ -42,7 +48,11 @@ const Contratos = () => {
 
         const fetchEnlaces = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/enlaces/detallados');
+                const response = await axios.get('http://localhost:8000/enlaces/detallados', {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 const enlacesData = response.data.enlaces;
 
                 const enlacesMap = enlacesData.reduce((acc, enlace) => {

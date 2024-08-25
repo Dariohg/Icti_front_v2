@@ -19,6 +19,7 @@ const AddEnlace = () => {
     const [selectedCargo, setSelectedCargo] = useState(null);
 
     const navigate = useNavigate();
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     useEffect(() => {
         getDependencias();
@@ -27,7 +28,11 @@ const AddEnlace = () => {
 
     const getDependencias = async () => {
         try {
-            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`);
+            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const dependencias = dependenciasRes.data.dependencias;
             const dependenciasMapped = dependencias.map(dep => ({
                 value: dep.id,
@@ -41,7 +46,11 @@ const AddEnlace = () => {
 
     const getCargos = async () => {
         try {
-            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`);
+            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const cargos = cargosRes.data.cargos;
             const cargosMapped = cargos.map(cargo => ({
                 value: cargo.id,
@@ -55,7 +64,11 @@ const AddEnlace = () => {
 
     const getDepartamentos = async (direccionId) => {
         try {
-            const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+            const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const departamentos = departamentosRes.data.departamentos;
             const departamentosMapped = departamentos.map(dep => ({
                 value: dep.id,
@@ -69,7 +82,11 @@ const AddEnlace = () => {
 
     const getDirecciones = async (dependenciaId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const direcciones = response.data.direcciones;
             const direccionesMapped = direcciones.map(dir => ({
                 value: dir.id,
@@ -133,9 +150,6 @@ const AddEnlace = () => {
     };
 
     const handleSubmit = async () => {
-        // Obtener el token desde la cookie
-        const token = Cookies.get('token');
-
         let userId = null;
 
         if (token) {
@@ -165,7 +179,11 @@ const AddEnlace = () => {
         console.log('enlaceData:', enlaceData);
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
 
             if (response.status !== 201) {
                 message.error('Hubo un error al agregar el enlace');

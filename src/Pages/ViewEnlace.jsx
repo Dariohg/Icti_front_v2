@@ -3,6 +3,7 @@ import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, 
 import { useParams, useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';
 
 const { Text } = Typography;
@@ -10,6 +11,7 @@ const { Text } = Typography;
 const ViewEnlace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     const [editable, setEditable] = useState(false);
     const [enlaceData, setEnlaceData] = useState({
@@ -36,10 +38,18 @@ const ViewEnlace = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados/completo/${id}`);
+                const enlaceResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados/completo/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 const enlace = enlaceResponse.data.enlace;
 
-                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`);
+                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 const contratos = contratosResponse.data.contrato;
 
                 const contratosMapped = contratos.map(contrato => ({
@@ -75,24 +85,40 @@ const ViewEnlace = () => {
         };
 
         fetchData();
-    }, [id]);
+    }, [id, token]);
 
     const loadDropdownOptions = async (dependenciaId, direccionId) => {
         try {
             const [dependenciasRes, cargosRes] = await Promise.all([
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`),
-                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`),
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                }),
+                axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                }),
             ]);
             setDependenciaOptions(dependenciasRes.data.dependencias);
             setCargoOptions(cargosRes.data.cargos);
 
             // Cargar direcciones y departamentos en cascada
             if (dependenciaId) {
-                const direccionesRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+                const direccionesRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 setDireccionOptions(direccionesRes.data.direcciones);
 
                 if (direccionId) {
-                    const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+                    const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}` // Agregar el token en los headers
+                        }
+                    });
                     setDepartamentoOptions(departamentosRes.data.departamentos);
                 }
             }
@@ -110,7 +136,11 @@ const ViewEnlace = () => {
         }));
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${value}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${value}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             setDireccionOptions(response.data.direcciones);
             setDepartamentoOptions([]); // Limpiar adscripciones hasta que se seleccione una nueva dirección
         } catch (error) {
@@ -126,7 +156,11 @@ const ViewEnlace = () => {
         }));
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${value}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${value}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             setDepartamentoOptions(response.data);
         } catch (error) {
             console.error('Error al obtener los departamentos:', error);
@@ -136,12 +170,16 @@ const ViewEnlace = () => {
     const handleSave = async () => {
         console.log('Datos al guardar:', enlaceData);
         try {
-            if(!enlaceData.nombre || !enlaceData.apellidoPaterno || !enlaceData.apellidoMaterno || !enlaceData.correo || !enlaceData.telefono || !enlaceData.dependencia || !enlaceData.direccion || !enlaceData.adscripcion || !enlaceData.cargo){
+            if (!enlaceData.nombre || !enlaceData.apellidoPaterno || !enlaceData.apellidoMaterno || !enlaceData.correo || !enlaceData.telefono || !enlaceData.dependencia || !enlaceData.direccion || !enlaceData.adscripcion || !enlaceData.cargo) {
                 message.error('Todos los campos son obligatorios');
                 return;
             }
-            const updateResponse = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, enlaceData);
-            if(updateResponse.status === 200){
+            const updateResponse = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, enlaceData, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
+            if (updateResponse.status === 200) {
                 message.success('Datos actualizados correctamente');
             } else {
                 message.error('Error al actualizar los datos del enlace.');
@@ -155,7 +193,12 @@ const ViewEnlace = () => {
 
     const handleDelete = async () => {
         try {
-            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, { estatus_id: 3 });
+            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}enlaces/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                },
+                data: { estatus_id: 3 }
+            });
             if (response.status === 200) {
                 message.success('Enlace eliminado correctamente');
                 navigate('/enlaces');
@@ -171,7 +214,11 @@ const ViewEnlace = () => {
 
     const fetchContracts = async () => {
         try {
-            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`);
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const contratos = contratosResponse.data.contrato;
 
             const contratosMapped = contratos.map(contrato => ({
@@ -202,7 +249,11 @@ const ViewEnlace = () => {
 
     const handleDeleteContract = async (id) => {
         try {
-            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`);
+            const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             if (response.status === 200) {
                 setEnlaceData(prevState => ({
                     ...prevState,
@@ -255,7 +306,6 @@ const ViewEnlace = () => {
             ),
         },
     ];
-
 
     const expandedRowRender = (record) => (
         <Text>{record.descripcion}</Text>
