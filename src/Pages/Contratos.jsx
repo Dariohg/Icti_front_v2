@@ -36,7 +36,6 @@ const Contratos = () => {
                     fechaContrato: new Date(contract.fechaContrato).toLocaleDateString(),
                     versionContrato: contract.versionContrato,
                     tipoInstalacion: contract.ubicacion,
-                    descripcion: contract.descripcion,
                 }));
 
                 setContracts(mappedContracts);
@@ -175,11 +174,6 @@ const Contratos = () => {
             title: 'Tipo de Instalación',
             dataIndex: 'tipoInstalacion',
             key: 'tipoInstalacion',
-        },
-        {
-            title: 'Descripción',
-            dataIndex: 'descripcion',
-            key: 'descripcion',
         },
         {
             title: 'Acciones',

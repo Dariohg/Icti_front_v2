@@ -124,9 +124,6 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
                 if (values.fechaContrato && dayjs(values.fechaContrato).format('YYYY-MM-DD') !== contrato.fechaContrato) {
                     updatedFields.fechaContrato = dayjs(values.fechaContrato).format('YYYY-MM-DD');
                 }
-                if (values.estatus && values.estatus !== contrato.estatus) {
-                    updatedFields.estatus = values.estatus === 'Activo' ? 1 : 0;
-                }
                 if (values.descripcion && values.descripcion !== contrato.descripcion) {
                     updatedFields.descripcion = values.descripcion;
                 }
@@ -254,20 +251,6 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
                                 options={versionContratoOptions}
                                 disabled={!form.getFieldValue('tipoContrato')}
                             />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="estatus"
-                            label="Estatus"
-                            rules={[{ required: true, message: 'Por favor selecciona el estatus' }]}
-                        >
-                            <Select placeholder="Selecciona el estatus">
-                                <Option value="Activo">Activo</Option>
-                                <Option value="Inactivo">Inactivo</Option>
-                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
