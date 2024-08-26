@@ -5,6 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
+import "../Styles/contrato.css"
 import EnlaceInfo from '../components/EnlaceInfo';  // Importa el componente
 
 const { TextArea } = Input;

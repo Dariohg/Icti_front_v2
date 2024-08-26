@@ -12,6 +12,7 @@ import Contratos from './Pages/Contratos';
 import NotFound from "./components/NotFound";
 import AddServicios from "./Pages/AddServicios";
 import ViewContrato from "./Pages/ViewContrato";
+import Usuarios from "./Pages/Usuarios";
 
 function App() {
     return (
@@ -30,6 +31,7 @@ function App() {
                 <Route path="addContrato" element={<Render><AddContrato /></Render>} />
                 <Route path="addServicio" element={<Render><AddServicios/></Render>}/>
                 <Route path="viewContrato/:id" element={<Render><ViewContrato/></Render>}/>
+                <Route path="usuarios" element={<Render><Usuarios/></Render>}/>
 
                 <Route path="*" element={<NotFound />} /> {/* Ruta para páginas no encontradas */}
             </Routes>
