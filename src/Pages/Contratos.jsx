@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Input, Divider, Typography, Row, Col, Tooltip, message, TreeSelect, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { SearchOutlined, CopyOutlined } from '@ant-design/icons';
+import { SearchOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import * as XLSX from 'xlsx';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 const { SHOW_PARENT } = TreeSelect;
-
+const {Text}=Typography;
 const Contratos = () => {
     const navigate = useNavigate();
     const [contracts, setContracts] = useState([]);
@@ -240,6 +241,28 @@ const Contratos = () => {
         setExpandedRowKeys(newExpandedRowKeys);
     };
 
+    const exportToExcel = () => {
+        // Filtramos y ajustamos las columnas para incluir correo y teléfono
+        const filteredData = filteredContracts.map(({ key, enlaceId, cliente, ...rest }) => {
+            const enlace = enlaces[enlaceId]; // Obtener el enlace correspondiente
+            return {
+                cliente: cliente,
+                correo: enlace ? enlace.correo : '',
+                telefono: enlace ? enlace.telefono : '',
+                ...rest
+            };
+        });
+
+        // Convertimos los datos filtrados a una hoja de Excel
+        const worksheet = XLSX.utils.json_to_sheet(filteredData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Contratos");
+
+        // Formato del archivo y descarga
+        XLSX.writeFile(workbook, "contratos.xlsx");
+    };
+
+
     const columns = [
         {
             title: 'Cliente',
@@ -281,7 +304,15 @@ const Contratos = () => {
         <div>
             <Title level={2}>Contratos</Title>
             <Divider style={{ marginTop: '20px' }} />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Button
+                    type="primary"
+                    icon={<DownloadOutlined />}
+                    onClick={exportToExcel}
+                    style={{ marginRight: 'auto' }}
+                >
+                    Exportar Excel
+                </Button>
                 <TreeSelect
                     treeData={treeData}
                     value={selectedTreeValues}
