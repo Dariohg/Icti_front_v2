@@ -106,7 +106,7 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
                     updatedFields.fechaContrato = dayjs(values.fechaContrato).format('YYYY-MM-DD');
                 }
                 if (values.estatus && values.estatus !== contrato.estatus) {
-                    updatedFields.estatus = values.estatus === 'Activo' ? 1 : 0;
+                    updatedFields.estatus = values.estatus === 'Activo' ? 1 : 2;
                 }
                 if (values.descripcion && values.descripcion !== contrato.descripcion) {
                     updatedFields.descripcion = values.descripcion;
