@@ -127,7 +127,7 @@ const ViewEnlace = () => {
 
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${value}`);
-            setDepartamentoOptions(response.data);
+            setDepartamentoOptions(response.data.departamentos);
         } catch (error) {
             console.error('Error al obtener los departamentos:', error);
         }
