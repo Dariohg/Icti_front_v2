@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Table, Button, Input, Divider, Typography, Row, Col, Tooltip, message, TreeSelect, Select, Spin} from 'antd';
+import { Table, Button, Input, Divider, Typography, Row, Col, Tooltip, message, TreeSelect, Select, Badge } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -10,7 +10,7 @@ const { Title } = Typography;
 const { Option } = Select;
 const { SHOW_PARENT } = TreeSelect;
 const {Text}=Typography;
-const Contratos = () => {
+const AllContratos = () => {
     const navigate = useNavigate();
     const [contracts, setContracts] = useState([]);
     const [filteredContracts, setFilteredContracts] = useState([]);
@@ -22,7 +22,6 @@ const Contratos = () => {
     const [selectedTreeValues, setSelectedTreeValues] = useState([]);
     const [selectedTipoInstalacion, setSelectedTipoInstalacion] = useState('');
 
-    const [loading, setLoading] = useState(true);
     const token = Cookies.get('token');
 
     useEffect(() => {
@@ -49,14 +48,16 @@ const Contratos = () => {
                 fechaContrato: new Date(contract.fechaContrato).toLocaleDateString(),
                 versionContrato: contract.versionContrato,
                 tipoInstalacion: contract.ubicacion,
+                estatus: contract.estatus,  // Incluir el estatus aquí
             }));
-            setLoading(false);
+
             setContracts(mappedContracts);
             setFilteredContracts(mappedContracts);
         } catch (error) {
             console.error('Error fetching contracts:', error);
         }
     };
+
 
     const fetchEnlaces = async () => {
         try {
@@ -293,20 +294,41 @@ const Contratos = () => {
         {
             title: 'Acciones',
             key: 'acciones',
-            render: (text, record) => (
-                <Button type="link" onClick={() => navigate(`/viewContrato/${record.key}`)}>
-                    Ver Detalles
-                </Button>
-            ),
+            render: (text, record) => {
+                let color;
+                let badgeText;
+
+                switch (record.estatus) {
+                    case 1:
+                        color = 'green';
+                        badgeText = 'Activo';
+                        break;
+                    case 2:
+                        color = 'orange';
+                        badgeText = 'Inactivo';
+                        break;
+                    case 3:
+                        color = 'red';
+                        badgeText = 'Eliminado';
+                        break;
+                    default:
+                        color = 'gray';
+                        badgeText = 'Desconocido';
+                }
+
+                return (
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <Button type="link" onClick={() => navigate(`/viewAllContrato/${record.key}`)}>
+                            Ver Detalles
+                        </Button>
+                        <Badge.Ribbon text={badgeText} color={color} style={{ position: 'absolute', right: '-50px', top: '-50px' }}>
+                            <span></span>
+                        </Badge.Ribbon>
+                    </div>
+                );
+            },
         },
     ];
-    if (loading) {
-        return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
-        );
-    }
 
     return (
         <div>
@@ -363,4 +385,4 @@ const Contratos = () => {
     );
 };
 
-export default Contratos;
+export default AllContratos;

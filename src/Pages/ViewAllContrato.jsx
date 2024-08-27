@@ -6,13 +6,15 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
 import "../Styles/contrato.css"
-import EnlaceInfo from '../components/EnlaceInfo';  // Importa el componente
+import EnlaceInfo from '../components/EnlaceInfo';
+import ContratoTable from "../components/ContratoTable";  // Importa el componente
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Title } = Typography;
+const {Text} = Typography;
 
-const ViewContrato = () => {
+const ViewAllContrato = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [form] = Form.useForm();
@@ -178,7 +180,6 @@ const ViewContrato = () => {
             message.error('Hubo un error al actualizar el contrato. Por favor, inténtalo de nuevo.');
         }
     };
-
     const handleDelete = async () => {
         try {
             const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
@@ -200,13 +201,17 @@ const ViewContrato = () => {
         }
     };
 
+    const handleRestore = () => {
+        // Esta función se llamará después de restaurar el contrato
+        fetchContrato(); // Recargar los datos
+    };
 
     const handleCancel = () => {
         if (isEditing) {
             setIsEditing(false);
             fetchContrato();
         } else {
-            navigate('/contratos');
+            navigate('/allContratos');
         }
     };
 
@@ -225,128 +230,135 @@ const ViewContrato = () => {
                 <Button
                     type="text"
                     icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate('/contratos')}
+                    onClick={() => navigate('/allContratos')}
                 >
                     Volver
                 </Button>
             </div>
             <Divider/>
-            <Form
-                form={form}
-                layout="vertical"
-                style={{ padding: '24px' }}
-            >
-                {/* Formulario de contrato aquí */}
-                <Row gutter={24}>
-                    <Col span={24}>
-                        <Form.Item
-                            label="Cliente"
-                            name="cliente"
-                        >
-                            <Input disabled />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Fecha de contrato"
-                            name="fechaContrato"
-                        >
-                            <DatePicker
-                                style={{ width: '100%' }}
-                                disabled={!isEditing}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Tipo de contrato"
-                            name="tipoContrato"
-                        >
-                            <Select
-                                disabled={!isEditing}
-                                onChange={handleTipoContratoChange}
-                                options={tipoContratoOptions}
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={24}>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Tipo de instalación"
-                            name="tipoInstalacion"
-                        >
-                            <Select
-                                disabled={!isEditing}
-                                options={tipoInstalacionOptions}
-                            />
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                        <Form.Item
-                            label="Versión de Contrato"
-                            name="versionContrato"
-                        >
-                            <Select
-                                disabled={!isEditing}
-                                options={versionContratoOptions}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Descripción"
-                            name="descripcion"
-                        >
-                            <TextArea
-                                rows={4}
-                                disabled={!isEditing}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {!isEditing ? (
-                            <>
-                                <Button type="primary" onClick={() => setIsEditing(true)} style={{ flex: 1, marginRight: 8 }}>
-                                    Actualizar
-                                </Button>
-                                <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                    Volver
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
-                                    Guardar
-                                </Button>
-                                <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                    Cancelar
-                                </Button>
-                            </>
-                        )}
-                    </Col>
-                </Row>
-            </Form>
             <div style={{ padding: '24px' }}>
-                {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
-            </div>
-            <div style={{ textAlign: 'center' }}>
-                <Popconfirm
-                    title="¿Estás seguro de que deseas eliminar este Contrato?"
-                    icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                    onConfirm={handleDelete}
-                    okText="Sí"
-                    cancelText="No"
-                    okButtonProps={{ danger: true }}
+                <Form
+                    form={form}
+                    layout="vertical"
+
                 >
-                    <Button danger icon={<DeleteOutlined />}>
-                        Eliminar Contrato
-                    </Button>
-                </Popconfirm>
+                    <Row gutter={24}>
+                        <Col span={24}>
+                            <Form.Item
+                                label="Cliente"
+                                name="cliente"
+                            >
+                                <Input disabled />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Fecha de contrato"
+                                name="fechaContrato"
+                            >
+                                <DatePicker
+                                    style={{ width: '100%' }}
+                                    disabled={!isEditing}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Tipo de contrato"
+                                name="tipoContrato"
+                            >
+                                <Select
+                                    disabled={!isEditing}
+                                    onChange={handleTipoContratoChange}
+                                    options={tipoContratoOptions}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={24}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Tipo de instalación"
+                                name="tipoInstalacion"
+                            >
+                                <Select
+                                    disabled={!isEditing}
+                                    options={tipoInstalacionOptions}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                            <Form.Item
+                                label="Versión de Contrato"
+                                name="versionContrato"
+                            >
+                                <Select
+                                    disabled={!isEditing}
+                                    options={versionContratoOptions}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Descripción"
+                                name="descripcion"
+                            >
+                                <TextArea
+                                    rows={4}
+                                    disabled={!isEditing}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {!isEditing ? (
+                                <>
+                                    <Button type="primary" onClick={() => setIsEditing(true)} style={{ flex: 1, marginRight: 8 }}>
+                                        Actualizar
+                                    </Button>
+                                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                                        Volver
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
+                                        Guardar
+                                    </Button>
+                                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                                        Cancelar
+                                    </Button>
+                                </>
+                            )}
+                        </Col>
+                    </Row>
+                </Form>
+                <div>
+                    {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
+                </div>
+                <Divider/>
+                <div style={{ textAlign: 'center' }}>
+                    <Popconfirm
+                        title="¿Estás seguro de que deseas eliminar este Contrato?"
+                        icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                        onConfirm={handleDelete}
+                        okText="Sí"
+                        cancelText="No"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Button danger icon={<DeleteOutlined />}>
+                            Eliminar Contrato
+                        </Button>
+                    </Popconfirm>
+                </div>
+                <Divider/>
+                <Text style={{fontSize: "20px"}}>Historial de modificaciones</Text>
+                <div style={{marginTop:"24px"}}>
+                    <ContratoTable onRestore={handleRestore} /> {/* Pasar la función de recarga como prop */}
+                </div>
             </div>
         </>
     );
 };
 
-export default ViewContrato;
+export default ViewAllContrato;

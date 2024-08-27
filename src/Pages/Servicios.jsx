@@ -80,6 +80,14 @@ const Servicios = () => {
         setFilteredServicios(filtered);
     };
 
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
+
     return (
         <div className="servicios-container">
             <Title level={2}>Servicios</Title>
@@ -105,51 +113,45 @@ const Servicios = () => {
                     prefix={<SearchOutlined />}
                 />
             </div>
-            {loading ? (
-                <div className="spin-container">
-                    <Spin size="large" />
-                </div>
-            ) : (
-                filteredServicios.map(servicio => (
-                    <Card key={servicio.id} title={`Folio: ${servicio.folio}`} bordered={true} style={{ marginBottom: '16px' }}>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={6}><strong>Dependencia:</strong> {servicio.dependencia}</Col>
-                            <Col span={12}><strong>Dirección:</strong> {servicio.direccion}</Col>
-                            <Col span={6}><strong>Folio:</strong> {servicio.folio}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={12}><strong>Solicitante:</strong> {servicio.nombreSolicitante}</Col>
-                            <Col span={6}><strong>Cargo:</strong> {servicio.cargo}</Col>
-                            <Col span={6}><strong>Receptor:</strong> {servicio.nombreReceptor}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={6}><strong>Fecha de Inicio:</strong> {moment(servicio.fechaInicio).format('YYYY-MM-DD')}</Col>
-                            <Col span={6}><strong>Fecha de Término:</strong> {moment(servicio.fechaTermino).format('YYYY-MM-DD')}</Col>
-                            <Col span={6}><strong>Tipo de Envío:</strong> {servicio.tipoEnvio}</Col>
-                            <Col span={6}><strong>Nivel:</strong> {servicio.nivel}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={6}><strong>Hora de Inicio:</strong> {servicio.horaInicio}</Col>
-                            <Col span={6}><strong>Hora de Término:</strong> {servicio.horaTermino}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={6}><strong>Tipo de Servicio:</strong> {servicio.tipoServicio}</Col>
-                            <Col span={6}><strong>Código de Servicio:</strong> {servicio.codigoServicio}</Col>
-                            <Col span={6}><strong>Tipo de Actividad:</strong> {servicio.tipoActividad}</Col>
-                            <Col span={6}><strong>Estado del Servicio:</strong> {servicio.estadoServicio}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={24}><strong>Descripción de la Falla:</strong> {servicio.descripcionFalla}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={24}><strong>Descripción de la Actividad:</strong> {servicio.descripccionActividad}</Col>
-                        </Row>
-                        <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
-                            <Col span={24}><strong>Observaciones:</strong> {servicio.observaciones}</Col>
-                        </Row>
-                    </Card>
-                ))
-            )}
+            {filteredServicios.map(servicio => (
+                <Card key={servicio.id} title={`Folio: ${servicio.folio}`} bordered={true} style={{ marginBottom: '16px' }}>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={6}><strong>Dependencia:</strong> {servicio.dependencia}</Col>
+                        <Col span={12}><strong>Dirección:</strong> {servicio.direccion}</Col>
+                        <Col span={6}><strong>Folio:</strong> {servicio.folio}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={12}><strong>Solicitante:</strong> {servicio.nombreSolicitante}</Col>
+                        <Col span={6}><strong>Cargo:</strong> {servicio.cargo}</Col>
+                        <Col span={6}><strong>Receptor:</strong> {servicio.nombreReceptor}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={6}><strong>Fecha de Inicio:</strong> {moment(servicio.fechaInicio).format('YYYY-MM-DD')}</Col>
+                        <Col span={6}><strong>Fecha de Término:</strong> {moment(servicio.fechaTermino).format('YYYY-MM-DD')}</Col>
+                        <Col span={6}><strong>Tipo de Envío:</strong> {servicio.tipoEnvio}</Col>
+                        <Col span={6}><strong>Nivel:</strong> {servicio.nivel}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={6}><strong>Hora de Inicio:</strong> {servicio.horaInicio}</Col>
+                        <Col span={6}><strong>Hora de Término:</strong> {servicio.horaTermino}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={6}><strong>Tipo de Servicio:</strong> {servicio.tipoServicio}</Col>
+                        <Col span={6}><strong>Código de Servicio:</strong> {servicio.codigoServicio}</Col>
+                        <Col span={6}><strong>Tipo de Actividad:</strong> {servicio.tipoActividad}</Col>
+                        <Col span={6}><strong>Estado del Servicio:</strong> {servicio.estadoServicio}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={24}><strong>Descripción de la Falla:</strong> {servicio.descripcionFalla}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={24}><strong>Descripción de la Actividad:</strong> {servicio.descripccionActividad}</Col>
+                    </Row>
+                    <Row className="hover-row-servicios" gutter={[16, 16]} style={{ marginBottom: '8px' }}>
+                        <Col span={24}><strong>Observaciones:</strong> {servicio.observaciones}</Col>
+                    </Row>
+                </Card>
+            ))}
         </div>
     );
 };

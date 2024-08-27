@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message } from 'antd';
+import {Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message, Spin} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -20,6 +20,8 @@ const Enlaces = () => {
     const [treeData, setTreeData] = useState([]);
     const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
     const [selectedTipoInstalacion, setSelectedTipoInstalacion] = useState(null);
+
+    const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
 
@@ -59,7 +61,7 @@ const Enlaces = () => {
                     };
                 }
             });
-
+            setLoading(false);
             const resolvedTreeData = await Promise.all(treeDataPromises);
             setTreeData(resolvedTreeData);
 
@@ -283,6 +285,14 @@ const Enlaces = () => {
             align: 'center',
         },
     ];
+
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <div>

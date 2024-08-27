@@ -14,6 +14,8 @@ import AddServicios from "./Pages/AddServicios";
 import ViewContrato from "./Pages/ViewContrato";
 import Usuarios from "./Pages/Usuarios";
 import Servicios from "./Pages/Servicios";
+import AllContratos from "./Pages/AllContratos";
+import ViewAllContrato from "./Pages/ViewAllContrato";
 
 function App() {
     return (
@@ -34,6 +36,10 @@ function App() {
                 <Route path="viewContrato/:id" element={<Render><ViewContrato/></Render>}/>
                 <Route path="usuarios" element={<Render><Usuarios/></Render>}/>
                 <Route path="servicios" element={<Render><Servicios/></Render>}/>
+
+                <Route path="allContratos" element={<Render><AllContratos/></Render>}/>
+                <Route path="viewAllContrato/:id" element={<Render><ViewAllContrato/></Render>}/>
+
                 <Route path="*" element={<NotFound />} /> {/* Ruta para páginas no encontradas */}
             </Routes>
         </Router>

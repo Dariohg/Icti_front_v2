@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Form, Row, Col, message } from 'antd';
+import {Input, Button, Form, Row, Col, message, Spin} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import axios from 'axios';
@@ -18,6 +18,7 @@ const AddEnlace = () => {
     const [selectedDepartamento, setSelectedDepartamento] = useState(null);
     const [selectedCargo, setSelectedCargo] = useState(null);
 
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
@@ -38,6 +39,7 @@ const AddEnlace = () => {
                 value: dep.id,
                 label: dep.nombre
             }));
+            setLoading(false);
             setDependenciaOptions(dependenciasMapped);
         } catch (error) {
             console.error("Error al obtener dependencias:", error);
@@ -201,6 +203,14 @@ const AddEnlace = () => {
     const handleCancel = () => {
         navigate('/enlaces');
     };
+
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <Form layout="vertical" onFinish={handleSubmit}>

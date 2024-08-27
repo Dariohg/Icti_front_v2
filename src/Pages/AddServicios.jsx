@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, message} from 'antd';
+import {Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, message, Spin} from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import '../Styles/addServicios.css';
@@ -23,6 +23,8 @@ const AddServicios = () => {
     const [tipoServicioOptions, setTipoServicioOptions] = useState([]);
     const [estadoServicioOptions, setEstadoServicioOptions] = useState([]);
     const [form] = Form.useForm(); // Hook para manejar el formulario
+
+    const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
 
@@ -49,6 +51,7 @@ const AddServicios = () => {
                 value: enlace.id,
                 label: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`
             }));
+            setLoading(false);
             setEnlaceOptions(enlacesMapped);
         } catch (error) {
             console.error("Error al obtener los enlaces:", error);
@@ -219,6 +222,13 @@ const AddServicios = () => {
     const handleCancel = () => {
         navigate('/servicios');
     };
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <Form

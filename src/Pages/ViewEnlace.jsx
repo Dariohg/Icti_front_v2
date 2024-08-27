@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, Popconfirm, Divider, Select } from 'antd';
+import {
+    Input,
+    Button,
+    Form,
+    Row,
+    Col,
+    Table,
+    Tag,
+    Space,
+    Typography,
+    message,
+    Popconfirm,
+    Divider,
+    Select,
+    Spin
+} from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import {EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutlined} from '@ant-design/icons';
 import axios from 'axios';
@@ -12,6 +27,7 @@ const { Title } = Typography;
 const ViewEnlace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     const [editable, setEditable] = useState(false);
@@ -78,6 +94,7 @@ const ViewEnlace = () => {
                 });
 
                 // Cargar opciones de dropdowns
+                setLoading(false);
                 await loadDropdownOptions(enlace.dependenciaId, enlace.direccionId);
             } catch (error) {
                 console.error('Error al obtener los datos del enlace:', error);
@@ -311,6 +328,14 @@ const ViewEnlace = () => {
     const expandedRowRender = (record) => (
         <Text>{record.descripcion}</Text>
     );
+
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <>

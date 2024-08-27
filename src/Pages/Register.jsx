@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, Select, message, Tooltip } from 'antd';
+import {Form, Input, Button, Row, Col, Select, message, Tooltip, Spin} from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -20,6 +20,7 @@ const Register = () => {
     const [passwordProgressVisible, setPasswordProgressVisible] = useState(false);
     const [passwordError, setPasswordError] = useState('');
 
+    const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     const handlePasswordChange = (e) => {
@@ -66,6 +67,7 @@ const Register = () => {
                     value: dep.id,
                     label: dep.nombre
                 }));
+                setLoading(false);
                 setDependencias(dependenciasMapped);
             } catch (error) {
                 console.error('Error fetching dependencias:', error);
@@ -190,7 +192,13 @@ const Register = () => {
     const handleCancel = () => {
         navigate('/home');
     };
-
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
     return (
         <div className="register-container">
             <div className="register-form-container">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Row, Col, DatePicker, message } from 'antd';
+import {Form, Input, Button, Row, Col, DatePicker, message, Spin} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import axios from 'axios';
@@ -10,6 +10,8 @@ const { TextArea } = Input;
 const AddContrato = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(true);
+
 
     const [clienteOptions, setClienteOptions] = useState([]);
     const [tipoContratoOptions, setTipoContratoOptions] = useState([]);
@@ -42,6 +44,7 @@ const AddContrato = () => {
                 label: `${cliente.nombre} ${cliente.apellidoP} ${cliente.apellidoM}`
             }));
             setClienteOptions(clientesMapped);
+            setLoading(false);
         } catch (error) {
             console.error('Error al obtener los clientes:', error);
             message.error('Hubo un error al obtener los clientes');
@@ -150,6 +153,13 @@ const AddContrato = () => {
     const handleCancel = () => {
         navigate('/contratos');
     };
+    if (loading) {
+        return (
+            <div className="spin-container">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <Form
