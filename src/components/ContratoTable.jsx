@@ -14,7 +14,7 @@ const ContratoTable = ({ onRestore }) => {
     useEffect(() => {
         const fetchContrato = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/contratos/modified/detallados/${contratoId}`, {
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/modified/detallados/${contratoId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -33,7 +33,7 @@ const ContratoTable = ({ onRestore }) => {
 
     const handleRestore = async () => {
         try {
-            const response = await axios.patch('http://localhost:8000/contratos/restore/modified', {
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/restore/modified`, {
                 modifiedId: contrato.id
             }, {
                 headers: {
