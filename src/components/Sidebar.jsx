@@ -92,8 +92,8 @@ const Sidebar = ({ onCollapse }) => {
                     </Menu.Item>
                 </SubMenu>
                 <SubMenu key="servicios" icon={<FolderOpenOutlined />} title="Servicios">
-                    <Menu.Item key="/listarServicios">
-                        <Link to="/listarServicios">
+                    <Menu.Item key="/servicios">
+                        <Link to="/servicios">
                             <UnorderedListOutlined />
                             Listar Servicios
                         </Link>

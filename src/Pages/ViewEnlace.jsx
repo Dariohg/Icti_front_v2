@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Input, Button, Form, Row, Col, Table, Tag, Space, Typography, message, Popconfirm, Divider, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import {EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutlined} from '@ant-design/icons';
-
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';

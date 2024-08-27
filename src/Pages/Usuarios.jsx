@@ -47,7 +47,6 @@ const Usuarios = () => {
     };
 
     const handleSaveUser = (updatedUser) => {
-        // Aquí puedes manejar la lógica para actualizar el usuario en el estado o enviarlo al backend
         console.log('Usuario actualizado:', updatedUser);
     };
 
