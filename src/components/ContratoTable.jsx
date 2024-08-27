@@ -9,7 +9,7 @@ const ContratoTable = ({ onRestore }) => {
     const [contrato, setContrato] = useState(null);
 
     const token = Cookies.get('token');
-    const contratoId = 4; // ID estático por ahora, puedes cambiarlo dinámicamente si es necesario
+    const contratoId = 1; // ID estático por ahora, puedes cambiarlo dinámicamente si es necesario
 
     useEffect(() => {
         const fetchContrato = async () => {
