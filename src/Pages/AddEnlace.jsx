@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Input, Button, Form, Row, Col, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
-import axios from 'axios'; // Importar Axios
+import axios from 'axios';
+import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
+import { jwtDecode } from 'jwt-decode'; // Importar jwtDecode correctamente
 
 const AddEnlace = () => {
     const [dependenciaOptions, setDependenciaOptions] = useState([]);
@@ -17,29 +19,26 @@ const AddEnlace = () => {
     const [selectedCargo, setSelectedCargo] = useState(null);
 
     const navigate = useNavigate();
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     useEffect(() => {
-        console.log('process.env:', process.env);  // Verifica qué variables de entorno están disponibles
-        console.log('BACKEND_URI:', process.env.REACT_APP_BACKEND_URI);  // Debe mostrar la URI correcta
         getDependencias();
         getCargos();
     }, []);
 
     const getDependencias = async () => {
         try {
-            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`);
-
+            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const dependencias = dependenciasRes.data.dependencias;
-
-            console.log('dependencias:', dependencias);
-
             const dependenciasMapped = dependencias.map(dep => ({
                 value: dep.id,
                 label: dep.nombre
             }));
-
             setDependenciaOptions(dependenciasMapped);
-
         } catch (error) {
             console.error("Error al obtener dependencias:", error);
         }
@@ -47,19 +46,17 @@ const AddEnlace = () => {
 
     const getCargos = async () => {
         try {
-            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`);
-
+            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const cargos = cargosRes.data.cargos;
-    
             const cargosMapped = cargos.map(cargo => ({
                 value: cargo.id,
                 label: cargo.nombre
             }));
-
-            console.log('cargosMapped:', cargosMapped);
-
             setCargoOptions(cargosMapped);
-    
         } catch (error) {
             console.error("Error al obtener los cargos:", error);
         }
@@ -67,19 +64,17 @@ const AddEnlace = () => {
 
     const getDepartamentos = async (direccionId) => {
         try {
-            const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
-
+            const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const departamentos = departamentosRes.data.departamentos;
-
-            console.log('departamentos:', departamentos);
-
             const departamentosMapped = departamentos.map(dep => ({
                 value: dep.id,
                 label: dep.nombre
             }));
-
             setDepartamentoOptions(departamentosMapped);
-
         } catch (error) {
             console.error("Error al obtener departamentos:", error);
         }
@@ -87,23 +82,21 @@ const AddEnlace = () => {
 
     const getDirecciones = async (dependenciaId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
-            
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const direcciones = response.data.direcciones;
-
-            console.log('direcciones:', direcciones);
-
             const direccionesMapped = direcciones.map(dir => ({
                 value: dir.id,
                 label: dir.nombre
             }));
-
             setDireccionOptions(direccionesMapped);
         } catch (error) {
             console.error("Error al obtener las direcciones:", error);
         }
     };
-    
 
     const handleDependenciaChange = async (selectedValue) => {
         setSelectedDependencia(selectedValue);
@@ -157,6 +150,18 @@ const AddEnlace = () => {
     };
 
     const handleSubmit = async () => {
+        let userId = null;
+
+        if (token) {
+            try {
+                // Decodificar el token para obtener el ID del usuario
+                const decodedToken = jwtDecode(token);
+                userId = decodedToken.id; // Ajusta el nombre del campo según tu token
+            } catch (error) {
+                console.error('Error decodificando el token JWT:', error);
+            }
+        }
+
         const enlaceData = {
             nombre: formData.nombre,
             apellidoP: formData.apellidoPaterno,
@@ -166,7 +171,7 @@ const AddEnlace = () => {
             estatus: 1, // Valor provisional
             adscripcion_id: selectedDepartamento, // ID del departamento seleccionado
             cargo_id: selectedCargo, // ID del cargo seleccionado
-            auth_user_id: 7, // Valor provisional
+            auth_user_id: userId, // ID del usuario obtenido del token
             tipoPersona_id: 1, // Valor provisional
             direccion_id: selectedDireccion, // ID de la dirección seleccionada
         };
@@ -174,11 +179,13 @@ const AddEnlace = () => {
         console.log('enlaceData:', enlaceData);
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
 
-            console.log('response:', response);
-
-            if(response.status !== 201) {
+            if (response.status !== 201) {
                 message.error('Hubo un error al agregar el enlace');
                 throw new Error('Error al agregar el enlace');
             }
@@ -190,7 +197,6 @@ const AddEnlace = () => {
             message.error('Hubo un error al agregar el enlace');
         }
     };
-
 
     const handleCancel = () => {
         navigate('/enlaces');
@@ -278,7 +284,7 @@ const AddEnlace = () => {
                 </Col>
 
                 <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={handleSubmit}  >
+                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={handleSubmit}>
                         Agregar Enlace
                     </Button>
                     <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>

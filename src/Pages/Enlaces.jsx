@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
+import Cookies from "js-cookie";
 
 const { Text, Title } = Typography;
 const { SHOW_PARENT } = TreeSelect;
@@ -19,10 +20,16 @@ const Enlaces = () => {
     const [treeData, setTreeData] = useState([]);
     const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
     const [selectedTipoInstalacion, setSelectedTipoInstalacion] = useState(null);
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
+
 
     const fetchTipoContratos = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`,{
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             const tipoContratos = response.data.tipoContrato;
 
             const treeDataPromises = tipoContratos.map(async (tipoContrato) => {
@@ -33,7 +40,11 @@ const Enlaces = () => {
                         key: `tipo-${tipoContrato.id}`,
                     };
                 } else {
-                    const versionesResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContrato.id}`);
+                    const versionesResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContrato.id}`,{
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
                     const versiones = versionesResponse.data.versiones.map(version => ({
                         title: version.descripcion,
                         value: version.descripcion,
@@ -60,7 +71,11 @@ const Enlaces = () => {
 
     const fetchTipoInstalacion = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`,{
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             const tipoInstalacion = response.data.tipoInstalacion;
             setTipoInstalacionOptions(tipoInstalacion);
         } catch (error) {
@@ -71,10 +86,18 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`,{
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             const enlacesData = response.data.enlaces;
 
-            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`);
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`,{
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             const contratosData = contratosResponse.data.contratos;
 
             const enlacesMapped = enlacesData.map(enlace => ({

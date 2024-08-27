@@ -47,6 +47,12 @@ const AppHeader = () => {
                 <Menu.Item key="/enlaces">
                     <Link to="/enlaces">Enlaces</Link>
                 </Menu.Item>
+                <Menu.Item key="/register">
+                    <Link to="/register">Registrar</Link>
+                </Menu.Item>
+                <Menu.Item key="/usuarios">
+                    <Link to="/usuarios">Usuarios</Link>
+                </Menu.Item>
             </Menu>
             <div className="user-info">
                 <Avatar style={{ backgroundColor: '#87d068', marginRight: 16 }}>{userInitial}</Avatar>

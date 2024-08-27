@@ -3,6 +3,7 @@ import { Form, Input, Button, Row, Col, Select, message, Tooltip } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
 import '../Styles/register.css'; // Importar estilos personalizados
 
 const { Option } = Select;
@@ -18,6 +19,8 @@ const Register = () => {
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [passwordProgressVisible, setPasswordProgressVisible] = useState(false);
     const [passwordError, setPasswordError] = useState('');
+
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     const handlePasswordChange = (e) => {
         const value = e.target.value;
@@ -54,7 +57,11 @@ const Register = () => {
     useEffect(() => {
         const fetchDependencias = async () => {
             try {
-                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`);
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 const dependenciasMapped = data.dependencias.map(dep => ({
                     value: dep.id,
                     label: dep.nombre
@@ -68,7 +75,11 @@ const Register = () => {
 
         const fetchCargos = async () => {
             try {
-                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`);
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    }
+                });
                 setCargos(data.cargos || []);
             } catch (error) {
                 console.error('Error fetching cargos:', error);
@@ -78,7 +89,7 @@ const Register = () => {
 
         fetchDependencias();
         fetchCargos();
-    }, []);
+    }, [token]);
 
     useEffect(() => {
         if (selectedDependencia) {
@@ -99,7 +110,11 @@ const Register = () => {
 
     const getDirecciones = async (dependenciaId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const direccionesMapped = response.data.direcciones.map(dir => ({
                 value: dir.id,
                 label: dir.nombre
@@ -113,7 +128,11 @@ const Register = () => {
 
     const getDepartamentos = async (direccionId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const departamentosMapped = response.data.departamentos.map(dep => ({
                 value: dep.id,
                 label: dep.nombre
@@ -140,7 +159,11 @@ const Register = () => {
         };
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/register`, dataToSend);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/register`, dataToSend, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             message.success('Usuario registrado exitosamente');
             navigate('/home');
         } catch (error) {

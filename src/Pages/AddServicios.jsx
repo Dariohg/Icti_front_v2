@@ -1,36 +1,228 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio } from 'antd';
+import React, { useState, useEffect } from 'react';
+import {Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, message} from 'antd';
+import axios from 'axios';
 import moment from 'moment';
-import '../Styles/addServicios.css';  // Importar estilos personalizados
+import '../Styles/addServicios.css';
+import {useNavigate} from "react-router-dom";
+import Cookies from "js-cookie";
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const AddServicios = () => {
+    const [enlaceOptions, setEnlaceOptions] = useState([]);
+    const [contratoOptions, setContratoOptions] = useState([]);
+    const [selectedEnlaceId, setSelectedEnlaceId] = useState(null);
     const [diagnosticoTipo, setDiagnosticoTipo] = useState(null);
     const [servicioTipo, setServicioTipo] = useState(null);
     const [estadoServicio, setEstadoServicio] = useState(null);
+    const [dependenciaOptions, setDependenciaOptions] = useState([]);
+    const [direccionOptions, setDireccionOptions] = useState([]);
+    const [cargoOptions, setCargoOptions] = useState([]);
+    const [tipoDiagnosticoOptions, setTipoDiagnosticoOptions] = useState([]);
+    const [tipoServicioOptions, setTipoServicioOptions] = useState([]);
+    const [estadoServicioOptions, setEstadoServicioOptions] = useState([]);
+    const [form] = Form.useForm(); // Hook para manejar el formulario
+    const token = Cookies.get('token'); // Obtener el token desde las cookies
 
-    const onFinish = (values) => {
-        console.log('Formulario enviado: ', values);
+
+    useEffect(() => {
+        getEnlaces();
+        getDependencias();
+        getCargos();
+        getTipoDiagnostico();
+        getTipoServicio();
+        getEstadoServicio();
+    }, []);
+
+    const navigate = useNavigate();
+
+    const getEnlaces = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const enlaces = response.data.enlaces;
+            const enlacesMapped = enlaces.map(enlace => ({
+                value: enlace.id,
+                label: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`
+            }));
+            setEnlaceOptions(enlacesMapped);
+        } catch (error) {
+            console.error("Error al obtener los enlaces:", error);
+        }
     };
 
-    const diagnosticoOptions = [
-        'Asesoría',
-        'Auditoría',
-        'Mantenimiento Físico',
-        'Infraestructura',
-        'Servicios Digitales',
-        'Mantenimiento de Paneles',
-        'Supervisión a Infraestructura',
-    ];
+    const getContratos = async (enlaceId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${enlaceId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const contratos = response.data.contrato;
+            const contratosMapped = contratos.map(contrato => ({
+                value: contrato.id,
+                label: contrato.descripcion
+            }));
+            setContratoOptions(contratosMapped);
+        } catch (error) {
+            console.error("Error al obtener los contratos:", error);
+        }
+    };
 
-    const servicioOptions = ['Instalación', 'Configuración'];
+    const handleEnlaceChange = (value) => {
+        setSelectedEnlaceId(value);
+        setContratoOptions([]); // Limpiar opciones de contrato
+        form.resetFields(['contrato']); // Reiniciar el campo de contrato en el formulario
+        getContratos(value); // Cargar nuevos contratos
+    };
 
-    const estadoOptions = ['Concluido', 'En seguimiento'];
+    const getTipoDiagnostico = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/tipos/servicio`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const tipos = response.data.tipos;
+            setTipoDiagnosticoOptions(tipos);
+        } catch (error) {
+            console.error("Error al obtener los tipos de diagnóstico:", error);
+        }
+    };
+
+    const getTipoServicio = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/tipos/actividad`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const tipos = response.data.tipos;
+            setTipoServicioOptions(tipos);
+        } catch (error) {
+            console.error("Error al obtener los tipos de servicio:", error);
+        }
+    };
+
+    const getEstadoServicio = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/tipos/estados-servicio`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const estados = response.data.estados;
+            setEstadoServicioOptions(estados);
+        } catch (error) {
+            console.error("Error al obtener los estados de servicio:", error);
+        }
+    };
+
+    const getDependencias = async () => {
+        try {
+            const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const dependencias = dependenciasRes.data.dependencias;
+            const dependenciasMapped = dependencias.map(dep => ({
+                value: dep.id,
+                label: dep.nombre
+            }));
+            setDependenciaOptions(dependenciasMapped);
+        } catch (error) {
+            console.error("Error al obtener dependencias:", error);
+        }
+    };
+
+    const getCargos = async () => {
+        try {
+            const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const cargos = cargosRes.data.cargos;
+            const cargosMapped = cargos.map(cargo => ({
+                value: cargo.id,
+                label: cargo.nombre
+            }));
+            setCargoOptions(cargosMapped);
+        } catch (error) {
+            console.error("Error al obtener los cargos:", error);
+        }
+    };
+
+    const getDirecciones = async (dependenciaId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const direcciones = response.data.direcciones;
+            const direccionesMapped = direcciones.map(dir => ({
+                value: dir.id,
+                label: dir.nombre
+            }));
+            setDireccionOptions(direccionesMapped);
+        } catch (error) {
+            console.error("Error al obtener las direcciones:", error);
+        }
+    };
+
+    const onDependenciaChange = (value) => {
+        getDirecciones(value);
+    };
+
+    const onFinish = async (values) => {
+        const formattedValues = {
+            nombreSolicitante: values.solicitante,
+            nombreReceptor: values.receptor,
+            fechaInicio: values.fechaInicio.format('YYYY-MM-DD'),
+            fechaTermino: values.fechaTermino.format('YYYY-MM-DD'),
+            horaInicio: values.horaInicio.format('HH:mm:ss'),
+            horaTermino: values.horaTermino.format('HH:mm:ss'),
+            descripcionFalla: values.descripcionFalla,
+            descripccionActividad: values.actividadRealizada,
+            nivel: values.nivel,
+            fotos: 1, // Siempre 1
+            observaciones: values.observaciones || '',
+            tipoEnvio: values.envio,
+            estatus: 1, // Siempre 1
+            tipoServicioId: tipoServicioOptions.find(option => option.nombre === values.tipoServicio)?.id,
+            contratoId: values.contrato,
+            tipoActividadId: tipoDiagnosticoOptions.find(option => option.nombre === values.tipoDiagnostico)?.id,
+            estadoServicioId: estadoServicioOptions.find(option => option.nombre === values.estadoServicio)?.id,
+            direccionId: values.direccion,
+            cargoId: values.cargo,
+        };
+
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}servicios`, formattedValues, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            message.success('Servicio guardado exitosamente');
+            navigate('/servicios');
+
+        } catch (error) {
+            console.error('Error al enviar el formulario:', error);
+        }
+    };
+    const handleCancel = () => {
+        navigate('/servicios');
+    };
 
     return (
         <Form
+            form={form} // Usar el hook del formulario
             name="add_servicios"
             layout="vertical"
             onFinish={onFinish}
@@ -43,7 +235,40 @@ const AddServicios = () => {
         >
             <h2>Reporte de Servicio</h2>
             <Row gutter={16}>
-                <Col span={24}>
+                <Col span={12}>
+                    <Form.Item
+                        name="enlace"
+                        label="Nombre del Enlace"
+                        rules={[{ required: true, message: 'Por favor selecciona un enlace' }]}
+                    >
+                        <Select
+                            placeholder="Selecciona un enlace"
+                            showSearch
+                            onChange={handleEnlaceChange}
+                            options={enlaceOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item
+                        name="contrato"
+                        label="Contrato"
+                        rules={[{ required: true, message: 'Por favor selecciona un contrato' }]}
+                    >
+                        <Select
+                            placeholder="Selecciona un contrato"
+                            showSearch
+                            options={contratoOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
                     <Form.Item
                         name="solicitante"
                         label="Solicitante"
@@ -52,16 +277,38 @@ const AddServicios = () => {
                         <Input placeholder="Nombre del solicitante" />
                     </Form.Item>
                 </Col>
+
                 <Col span={12}>
                     <Form.Item
                         name="dependencia"
                         label="Dependencia"
                         rules={[{ required: true, message: 'Por favor selecciona una dependencia' }]}
                     >
-                        <Select placeholder="Selecciona una dependencia">
-                            <Option value="dep1">Dependencia 1</Option>
-                            <Option value="dep2">Dependencia 2</Option>
-                        </Select>
+                        <Select
+                            placeholder="Selecciona una dependencia"
+                            showSearch
+                            onChange={onDependenciaChange}
+                            options={dependenciaOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item
+                        name="direccion"
+                        label="Direccion"
+                        rules={[{ required: true, message: 'Por favor selecciona una direccion' }]}
+                    >
+                        <Select
+                            placeholder="Selecciona una direccion"
+                            showSearch
+                            options={direccionOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -70,10 +317,14 @@ const AddServicios = () => {
                         label="Cargo"
                         rules={[{ required: true, message: 'Por favor selecciona un cargo' }]}
                     >
-                        <Select placeholder="Selecciona un cargo">
-                            <Option value="cargo1">Cargo 1</Option>
-                            <Option value="cargo2">Cargo 2</Option>
-                        </Select>
+                        <Select
+                            placeholder="Selecciona un cargo"
+                            showSearch
+                            options={cargoOptions}
+                            filterOption={(input, option) =>
+                                option.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -100,7 +351,7 @@ const AddServicios = () => {
                         label="Hora de Inicio"
                         rules={[{ required: true, message: 'Por favor selecciona la hora de inicio' }]}
                     >
-                        <TimePicker style={{ width: '100%' }} />
+                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -109,7 +360,7 @@ const AddServicios = () => {
                         label="Hora de Término"
                         rules={[{ required: true, message: 'Por favor selecciona la hora de término' }]}
                     >
-                        <TimePicker style={{ width: '100%' }} />
+                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -141,9 +392,9 @@ const AddServicios = () => {
                         rules={[{ required: true, message: 'Por favor selecciona un tipo de diagnóstico' }]}
                     >
                         <Radio.Group onChange={(e) => setDiagnosticoTipo(e.target.value)} className="radio-grid">
-                            {diagnosticoOptions.map((option) => (
-                                <Radio value={option} key={option} className="radio-with-label">
-                                    {option}
+                            {tipoDiagnosticoOptions.map((option) => (
+                                <Radio value={option.nombre} key={option.id} className="radio-with-label">
+                                    {option.nombre}
                                 </Radio>
                             ))}
                         </Radio.Group>
@@ -165,9 +416,9 @@ const AddServicios = () => {
                         rules={[{ required: true, message: 'Por favor selecciona un tipo de servicio' }]}
                     >
                         <Radio.Group onChange={(e) => setServicioTipo(e.target.value)} className="radio-grid">
-                            {servicioOptions.map((option) => (
-                                <Radio value={option} key={option} className="radio-with-label">
-                                    {option}
+                            {tipoServicioOptions.map((option) => (
+                                <Radio value={option.nombre} key={option.id} className="radio-with-label">
+                                    {option.nombre}
                                 </Radio>
                             ))}
                         </Radio.Group>
@@ -189,21 +440,43 @@ const AddServicios = () => {
                         rules={[{ required: true, message: 'Por favor selecciona un estado de servicio' }]}
                     >
                         <Radio.Group onChange={(e) => setEstadoServicio(e.target.value)} className="radio-grid">
-                            {estadoOptions.map((option) => (
-                                <Radio value={option} key={option} className="radio-with-label">
-                                    {option}
+                            {estadoServicioOptions.map((option) => (
+                                <Radio value={option.nombre} key={option.id} className="radio-with-label">
+                                    {option.nombre}
                                 </Radio>
                             ))}
                         </Radio.Group>
                     </Form.Item>
                 </Col>
+                <Col span={24}>
+                    <Form.Item
+                        name="observaciones"
+                        label="Observaciones del servicio"
+                        rules={[{ required: true, message: 'Por favor ponga una descripción' }]}
+                    >
+                        <TextArea rows={4} placeholder="Descripción detallada de las observaciones" />
+                    </Form.Item>
+                </Col>
             </Row>
-
-            <Form.Item>
-                <Button type="primary" htmlType="submit">
-                    Enviar
-                </Button>
-            </Form.Item>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item
+                        name="receptor"
+                        label="Receptor"
+                        rules={[{ required: true, message: 'Por favor ingresa el nombre del receptor' }]}
+                    >
+                        <Input placeholder="Nombre del receptor" />
+                    </Form.Item>
+                </Col>
+                <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} htmlType="submit">
+                        Agregar Contrato
+                    </Button>
+                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                        Cancelar
+                    </Button>
+                </Col>
+            </Row>
         </Form>
     );
 };

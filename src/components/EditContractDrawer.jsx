@@ -3,6 +3,7 @@ import { Drawer, Form, Button, Col, Row, Input, Select, DatePicker, Space, Popco
 import { CloseOutlined, DeleteOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import Cookies from 'js-cookie'; // Importa js-cookie para manejar cookies
 
 const { Option } = Select;
 
@@ -11,6 +12,8 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
     const [tipoContratoOptions, setTipoContratoOptions] = useState([]);
     const [versionContratoOptions, setVersionContratoOptions] = useState([]);
     const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
+
+    const token = Cookies.get('token'); // Obtén el token desde las cookies
 
     useEffect(() => {
         if (visible && contrato) {
@@ -27,7 +30,11 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
 
     const fetchTipoContratos = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const tiposContrato = response.data.tipoContrato;
             const tiposContratoMapped = tiposContrato.map(tipo => ({
                 value: tipo.id,
@@ -42,7 +49,11 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
 
     const fetchVersionesContrato = async (tipoContratoId) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContratoId}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContratoId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const versiones = response.data.versiones;
             const versionesMapped = versiones.map(version => ({
                 value: version.id,
@@ -57,7 +68,11 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
 
     const fetchTipoInstalacion = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             const tipoInstalacion = response.data.tipoInstalacion;
             const tipoInstalacionMapped = tipoInstalacion.map(instalacion => ({
                 value: instalacion.id,
@@ -84,7 +99,11 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
 
     const handlePatch = async (updatedFields) => {
         try {
-            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${contrato.key}`, updatedFields);
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${contrato.key}`, updatedFields, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             message.success('Contrato actualizado exitosamente');
             onSave(response.data);
             form.resetFields();
@@ -130,7 +149,11 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${contrato.key}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${contrato.key}`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                }
+            });
             message.success('Contrato eliminado exitosamente');
             onDelete();
             form.resetFields();
@@ -231,20 +254,6 @@ const EditContractDrawer = ({ contrato, visible, onClose, onSave, onDelete }) =>
                                 options={versionContratoOptions}
                                 disabled={!form.getFieldValue('tipoContrato')}
                             />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="estatus"
-                            label="Estatus"
-                            rules={[{ required: true, message: 'Por favor selecciona el estatus' }]}
-                        >
-                            <Select placeholder="Selecciona el estatus">
-                                <Option value="Activo">Activo</Option>
-                                <Option value="Inactivo">Inactivo</Option>
-                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
