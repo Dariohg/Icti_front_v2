@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, message, Spin} from 'antd';
+import { Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, message, Spin } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import '../Styles/addServicios.css';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 const { Option } = Select;
@@ -26,7 +26,6 @@ const AddServicios = () => {
 
     const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
-
 
     useEffect(() => {
         getEnlaces();
@@ -217,11 +216,14 @@ const AddServicios = () => {
 
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
+            message.error('Hubo un error al guardar el servicio. Por favor, inténtelo de nuevo.');
         }
     };
+
     const handleCancel = () => {
         navigate('/servicios');
     };
+
     if (loading) {
         return (
             <div className="spin-container">
@@ -236,12 +238,6 @@ const AddServicios = () => {
             name="add_servicios"
             layout="vertical"
             onFinish={onFinish}
-            initialValues={{
-                fechaInicio: moment(),
-                horaInicio: moment(),
-                fechaTermino: moment(),
-                horaTermino: moment(),
-            }}
         >
             <h2>Reporte de Servicio</h2>
             <Row gutter={16}>
@@ -478,14 +474,17 @@ const AddServicios = () => {
                         <Input placeholder="Nombre del receptor" />
                     </Form.Item>
                 </Col>
-                <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={onFinish}>
-                        Agregar Contrato
-                    </Button>
-                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
+                <Col span={12} style={{ display: 'flex', marginTop: "30px", justifyContent: 'space-between' }}>
+                    <Form.Item shouldUpdate style={{ width: '50%', marginRight: '8px' }}>
+                        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+                            Agregar Contrato
+                        </Button>
+                    </Form.Item>
+                    <Button danger type="text" onClick={handleCancel} style={{ width: '50%' }}>
                         Cancelar
                     </Button>
                 </Col>
+
             </Row>
         </Form>
     );
