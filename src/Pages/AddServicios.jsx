@@ -479,7 +479,7 @@ const AddServicios = () => {
                     </Form.Item>
                 </Col>
                 <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} htmlType="submit">
+                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={onFinish}>
                         Agregar Contrato
                     </Button>
                     <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>

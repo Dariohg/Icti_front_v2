@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import {Form, Input, Button, Row, Col, Select, message, Tooltip, Spin} from 'antd';
+import { Form, Input, Button, Row, Col, Select, message, Tooltip, Spin } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
-import '../Styles/register.css'; // Importar estilos personalizados
+import Cookies from 'js-cookie';
+import '../Styles/register.css';
 
 const { Option } = Select;
 
@@ -16,62 +16,54 @@ const Register = () => {
     const [cargos, setCargos] = useState([]);
     const [selectedDependencia, setSelectedDependencia] = useState(null);
     const [selectedDireccion, setSelectedDireccion] = useState(null);
-    const [passwordStrength, setPasswordStrength] = useState(0);
-    const [passwordProgressVisible, setPasswordProgressVisible] = useState(false);
     const [passwordError, setPasswordError] = useState('');
-
     const [loading, setLoading] = useState(true);
-    const token = Cookies.get('token'); // Obtener el token desde las cookies
+    const token = Cookies.get('token');
 
-    const handlePasswordChange = (e) => {
-        const value = e.target.value;
-
-        if (!value) {
-            setPasswordError(''); // Resetear el error si el campo está vacío
-            setPasswordProgressVisible(false);
-            return;
-        }
+    const validatePassword = (_, value) => {
 
         const lengthRule = value.length >= 8;
         const capitalRule = /[A-Z]/.test(value);
         const numberRule = /\d/.test(value);
-        const specialCharRule = /[@$!%*?&#]/.test(value);
+        const specialCharRule = /[@$!%*?&#.]/.test(value);
 
-        let strength = 0;
-        if (lengthRule) strength += 25;
-        if (capitalRule) strength += 25;
-        if (numberRule) strength += 25;
-        if (specialCharRule) strength += 25;
-
-        setPasswordStrength(strength);
-        setPasswordProgressVisible(value.length > 0);
-
-        if (!lengthRule) {
-            setPasswordError('La contraseña debe tener al menos 8 caracteres');
-        } else if (!capitalRule || !numberRule || !specialCharRule) {
-            setPasswordError('Debe contener al menos una mayúscula, un número y un carácter especial');
+        if (value.length > 0 && !lengthRule) {
+            return Promise.reject('La contraseña debe tener al menos 8 caracteres');
+        } else if (value.length > 0 && !capitalRule) {
+            return Promise.reject('Debe contener al menos una mayúscula');
+        } else if (value.length > 0 && !numberRule || !specialCharRule){
+            return Promise.reject('Debe contener un número y un carácter especial');
         } else {
-            setPasswordError('');
+            return Promise.resolve();
         }
     };
+
+    const validateConfirmPassword = ({ getFieldValue }) => ({
+        validator(_, value) {
+            if (value && getFieldValue('password') !== value) {
+                return Promise.reject(new Error('¡Las contraseñas no coinciden!'));
+            }
+            return Promise.resolve();
+        },
+    });
 
     useEffect(() => {
         const fetchDependencias = async () => {
             try {
                 const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias`, {
                     headers: {
-                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                        Authorization: `Bearer ${token}`
                     }
                 });
                 const dependenciasMapped = data.dependencias.map(dep => ({
                     value: dep.id,
                     label: dep.nombre
                 }));
-                setLoading(false);
                 setDependencias(dependenciasMapped);
             } catch (error) {
                 console.error('Error fetching dependencias:', error);
-                setDependencias([]);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -79,13 +71,12 @@ const Register = () => {
             try {
                 const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos`, {
                     headers: {
-                        Authorization: `Bearer ${token}` // Agregar el token en los headers
+                        Authorization: `Bearer ${token}`
                     }
                 });
                 setCargos(data.cargos || []);
             } catch (error) {
                 console.error('Error fetching cargos:', error);
-                setCargos([]);
             }
         };
 
@@ -114,7 +105,7 @@ const Register = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const direccionesMapped = response.data.direcciones.map(dir => ({
@@ -124,7 +115,6 @@ const Register = () => {
             setDirecciones(direccionesMapped);
         } catch (error) {
             console.error("Error al obtener las direcciones:", error);
-            setDirecciones([]);
         }
     };
 
@@ -132,7 +122,7 @@ const Register = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const departamentosMapped = response.data.departamentos.map(dep => ({
@@ -142,7 +132,6 @@ const Register = () => {
             setDepartamentos(departamentosMapped);
         } catch (error) {
             console.error("Error al obtener departamentos:", error);
-            setDepartamentos([]);
         }
     };
 
@@ -163,7 +152,7 @@ const Register = () => {
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}usuarios/auth/register`, dataToSend, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             message.success('Usuario registrado exitosamente');
@@ -174,24 +163,10 @@ const Register = () => {
         }
     };
 
-    const validatePasswords = ({ getFieldValue }) => ({
-        validator(_, value) {
-            const lengthRule = value && value.length >= 8;
-            const capitalRule = /[A-Z]/.test(value);
-            const numberRule = /\d/.test(value);
-            const specialCharRule = /[@$!%*?&#.]/.test(value);
-
-            if (lengthRule && capitalRule && numberRule && specialCharRule) {
-                return Promise.resolve();
-            }
-
-            return Promise.reject();
-        }
-    });
-
     const handleCancel = () => {
         navigate('/home');
     };
+
     if (loading) {
         return (
             <div className="spin-container">
@@ -199,6 +174,7 @@ const Register = () => {
             </div>
         );
     }
+
     return (
         <div className="register-container">
             <div className="register-form-container">
@@ -352,42 +328,20 @@ const Register = () => {
                                 name="password"
                                 rules={[
                                     {
-                                        validator: (_, value) => {
-                                            if (!value) {
-                                                setPasswordError('');
-                                                return Promise.reject('¡Por favor ingresa tu contraseña!');
-                                            }
-                                            if (passwordError) {
-                                                return Promise.reject(passwordError);
-                                            }
-                                            return Promise.resolve();
-                                        },
+                                        required: true,
+                                        message: '¡Por favor ingresa tu contraseña!',
+                                    },
+                                    {
+                                        validator: validatePassword,
                                     },
                                 ]}
                             >
-                                <Tooltip color={"red"} title={passwordError} visible={!!passwordError} placement="rightTop">
-                                    <Input
-                                        prefix={<LockOutlined className="site-form-item-icon" />}
-                                        type="password"
-                                        placeholder="Contraseña"
-                                        onChange={handlePasswordChange}
-                                    />
-                                </Tooltip>
+                                <Input
+                                    prefix={<LockOutlined className="site-form-item-icon" />}
+                                    type="password"
+                                    placeholder="Contraseña"
+                                />
                             </Form.Item>
-                            {passwordProgressVisible && (
-                                <div style={{ marginTop: -12, marginBottom: 8 }}>
-                                    <div style={{ height: 2, background: '#e9e9e9', borderRadius: 2 }}>
-                                        <div
-                                            style={{
-                                                width: `${passwordStrength}%`,
-                                                background: passwordStrength < 50 ? '#ff4d4f' : passwordStrength < 75 ? '#faad14' : '#52c41a',
-                                                height: '100%',
-                                                borderRadius: 2,
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </Col>
 
                         <Col span={12}>
@@ -395,7 +349,7 @@ const Register = () => {
                                 name="isSuperUser"
                                 rules={[{ required: true, message: '¡Por favor selecciona si el usuario es superusuario!' }]}
                             >
-                                <Select placeholder="Selecciona si es Superusuario" tabIndex={-1}>
+                                <Select placeholder="Selecciona si es Superusuario">
                                     <Option value="yes">Sí</Option>
                                     <Option value="no">No</Option>
                                 </Select>
@@ -407,8 +361,11 @@ const Register = () => {
                                 dependencies={['password']}
                                 hasFeedback
                                 rules={[
-                                    { required: true, message: '¡Por favor confirma tu contraseña!' },
-                                    validatePasswords,
+                                    {
+                                        required: true,
+                                        message: '¡Por favor confirma tu contraseña!',
+                                    },
+                                    validateConfirmPassword,
                                 ]}
                             >
                                 <Input
