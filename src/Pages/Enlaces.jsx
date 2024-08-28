@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message, Spin} from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -24,10 +24,9 @@ const Enlaces = () => {
     const [loading, setLoading] = useState(true);
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
-
     const fetchTipoContratos = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`,{
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-contrato`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -42,7 +41,7 @@ const Enlaces = () => {
                         key: `tipo-${tipoContrato.id}`,
                     };
                 } else {
-                    const versionesResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContrato.id}`,{
+                    const versionesResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/versiones/${tipoContrato.id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -73,7 +72,7 @@ const Enlaces = () => {
 
     const fetchTipoInstalacion = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`,{
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/tipos-instalacion`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -88,14 +87,14 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`,{
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             const enlacesData = response.data.enlaces;
 
-            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`,{
+            const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -107,7 +106,6 @@ const Enlaces = () => {
                 nombre: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`,
                 correo: enlace.correo,
                 telefono: enlace.telefono,
-                dependencia: enlace.dependencia,
                 direccion: enlace.direccion,
                 adscripcion: enlace.adscripcion,
                 cargo: enlace.cargo,
@@ -246,12 +244,6 @@ const Enlaces = () => {
             title: 'Número de Teléfono',
             dataIndex: 'telefono',
             key: 'telefono',
-            align: 'center',
-        },
-        {
-            title: 'Dependencia',
-            dataIndex: 'dependencia',
-            key: 'dependencia',
             align: 'center',
         },
         {
