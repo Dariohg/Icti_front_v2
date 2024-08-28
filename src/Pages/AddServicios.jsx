@@ -5,6 +5,7 @@ import moment from 'moment';
 import '../Styles/addServicios.css';
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -197,13 +198,16 @@ const AddServicios = () => {
             observaciones: values.observaciones || '',
             tipoEnvio: values.envio,
             estatus: 1, // Siempre 1
-            tipoServicioId: tipoServicioOptions.find(option => option.nombre === values.tipoServicio)?.id,
+            tipoServicioId: tipoDiagnosticoOptions.find(option => option.nombre === values.tipoDiagnostico)?.id,
             contratoId: values.contrato,
-            tipoActividadId: tipoDiagnosticoOptions.find(option => option.nombre === values.tipoDiagnostico)?.id,
+            tipoActividadId: tipoServicioOptions.find(option => option.nombre === values.tipoServicio)?.id,
+
             estadoServicioId: estadoServicioOptions.find(option => option.nombre === values.estadoServicio)?.id,
             direccionId: values.direccion,
             cargoId: values.cargo,
         };
+
+        console.log('Datos enviados:', formattedValues); // Verifica los datos enviados
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}servicios`, formattedValues, {
@@ -226,9 +230,7 @@ const AddServicios = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 
@@ -477,7 +479,7 @@ const AddServicios = () => {
                 <Col span={12} style={{ display: 'flex', marginTop: "30px", justifyContent: 'space-between' }}>
                     <Form.Item shouldUpdate style={{ width: '50%', marginRight: '8px' }}>
                         <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-                            Agregar Contrato
+                            Agregar Servicio
                         </Button>
                     </Form.Item>
                     <Button danger type="text" onClick={handleCancel} style={{ width: '50%' }}>

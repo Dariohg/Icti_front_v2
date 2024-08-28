@@ -3,7 +3,8 @@ import {Form, Input, Button, Row, Col, DatePicker, message, Spin} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import axios from 'axios';
-import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
+import Cookies from 'js-cookie';
+import LoadingSpinner from "../components/LoadingSpinner"; // Importar js-cookie para manejar cookies
 
 const { TextArea } = Input;
 
@@ -155,9 +156,7 @@ const AddContrato = () => {
     };
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

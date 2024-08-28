@@ -20,6 +20,7 @@ import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutli
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Text } = Typography;
 const { Title } = Typography;
@@ -325,9 +326,7 @@ const ViewEnlace = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

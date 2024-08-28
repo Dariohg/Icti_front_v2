@@ -5,6 +5,7 @@ import { SearchOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icon
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import * as XLSX from 'xlsx';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -302,9 +303,7 @@ const Contratos = () => {
     ];
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

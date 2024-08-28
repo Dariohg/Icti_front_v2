@@ -6,7 +6,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
 import "../Styles/contrato.css"
-import EnlaceInfo from '../components/EnlaceInfo';  // Importa el componente
+import EnlaceInfo from '../components/EnlaceInfo';
+import LoadingSpinner from "../components/LoadingSpinner";  // Importa el componente
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -207,9 +208,7 @@ const ViewContrato = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

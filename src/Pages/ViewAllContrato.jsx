@@ -8,6 +8,7 @@ import moment from 'moment';
 import "../Styles/contrato.css";
 import EnlaceInfo from '../components/EnlaceInfo';
 import ContratoTable from "../components/ContratoTable";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -228,9 +229,7 @@ const ViewAllContrato = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

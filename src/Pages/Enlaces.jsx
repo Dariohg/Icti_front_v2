@@ -5,6 +5,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
 import Cookies from "js-cookie";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Text, Title } = Typography;
 const { SHOW_PARENT } = TreeSelect;
@@ -280,9 +281,7 @@ const Enlaces = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {Table, Button, Typography, Divider} from 'antd';
 import axios from 'axios';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Text, Title } = Typography;
 
 const Servicios = () => {
     const [servicios, setServicios] = useState([]);
+    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados`)
             .then(response => {
                 setServicios(response.data.servicios);
+                setLoading(false);
             })
             .catch(error => {
                 console.error('Error al obtener los servicios:', error);
@@ -23,6 +27,12 @@ const Servicios = () => {
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     };
+
+    if (loading) {
+        return (
+            <LoadingSpinner/>
+        );
+    }
 
     const columns = [
         {

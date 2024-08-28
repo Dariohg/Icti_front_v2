@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../Styles/register.css';
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const { Option } = Select;
 
@@ -169,9 +170,7 @@ const Register = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

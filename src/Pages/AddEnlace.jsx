@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import axios from 'axios';
 import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
-import { jwtDecode } from 'jwt-decode'; // Importar jwtDecode correctamente
+import { jwtDecode } from 'jwt-decode';
+import LoadingSpinner from "../components/LoadingSpinner"; // Importar jwtDecode correctamente
 
 const AddEnlace = () => {
     const [dependenciaOptions, setDependenciaOptions] = useState([]);
@@ -206,9 +207,7 @@ const AddEnlace = () => {
 
     if (loading) {
         return (
-            <div className="spin-container">
-                <Spin size="large" />
-            </div>
+            <LoadingSpinner/>
         );
     }
 

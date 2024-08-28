@@ -4,18 +4,4 @@
     border-radius: 5px;
 }
 
-.spin-container {
-    min-height: 100vh; /* Asegura que el contenedor ocupe al menos la altura completa de la ventana */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-.spin {
-    text-align: center;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
