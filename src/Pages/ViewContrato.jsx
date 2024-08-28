@@ -141,7 +141,7 @@ const ViewContrato = () => {
             const values = await form.validateFields();
 
             // Encontrar el ID correspondiente para la ubicación seleccionada
-            const ubicacionSeleccionada = tipoInstalacionOptions.find(option => option.label === values.tipoInstalacion);
+            const ubicacionSeleccionada = tipoInstalacionOptions.find(option => option.value === values.tipoInstalacion);
             const ubicacionId = ubicacionSeleccionada ? ubicacionSeleccionada.value : null;
 
             if (!ubicacionId) {
@@ -165,6 +165,7 @@ const ViewContrato = () => {
             });
 
             if (response.status === 200) {
+                console.log(dataToSave);
                 message.success('Contrato actualizado correctamente');
                 setIsEditing(false);
             } else {
@@ -178,6 +179,7 @@ const ViewContrato = () => {
             message.error('Hubo un error al actualizar el contrato. Por favor, inténtalo de nuevo.');
         }
     };
+
 
     const handleDelete = async () => {
         try {
