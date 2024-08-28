@@ -16,7 +16,7 @@ import {
     Spin
 } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import {EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutlined} from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';
@@ -62,24 +62,6 @@ const ViewEnlace = () => {
                 });
                 const enlace = enlaceResponse.data.enlace;
 
-                const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}` // Agregar el token en los headers
-                    }
-                });
-                const contratos = contratosResponse.data.contrato;
-
-                const contratosMapped = contratos.map(contrato => ({
-                    key: contrato.id,
-                    fechaContrato: contrato.fechaContrato.slice(0, 10), // Mostrar solo la fecha
-                    tipoInstalacion: contrato.ubicacion,
-                    tipoContrato: contrato.tipoContrato,
-                    versionContrato: contrato.versionContrato,
-                    estatus: contrato.estatus === 1 ? 'Activo' : 'Inactivo',
-                    descripcion: contrato.descripcion,
-                }));
-
-                // Establecer los valores obtenidos desde el backend
                 setEnlaceData({
                     nombre: enlace.nombre,
                     apellidoPaterno: enlace.apellidoP,
@@ -90,19 +72,21 @@ const ViewEnlace = () => {
                     direccion: enlace.direccionId, // El ID de la dirección
                     adscripcion: enlace.adscripcionId, // El ID del departamento
                     cargo: enlace.cargoId, // El ID del cargo
-                    contratos: contratosMapped,
+                    contratos: [], // Contratos vacíos por ahora
                 });
 
                 // Cargar opciones de dropdowns
-                setLoading(false);
                 await loadDropdownOptions(enlace.dependenciaId, enlace.direccionId);
+                setLoading(false);
             } catch (error) {
                 console.error('Error al obtener los datos del enlace:', error);
                 message.error('Hubo un error al obtener los datos del enlace.');
+                setLoading(false);
             }
         };
 
         fetchData();
+        fetchContracts(); // Llamar a la función para cargar los contratos
     }, [id, token]);
 
     const loadDropdownOptions = async (dependenciaId, direccionId) => {
@@ -239,6 +223,11 @@ const ViewEnlace = () => {
             });
             const contratos = contratosResponse.data.contrato;
 
+            if (contratosResponse.data.msg === "No se encontraron contratos") {
+                // Si no se encuentran contratos, simplemente mantener el estado actual sin cambios
+                return;
+            }
+
             const contratosMapped = contratos.map(contrato => ({
                 key: contrato.id,
                 fechaContrato: contrato.fechaContrato.slice(0, 10),
@@ -251,10 +240,15 @@ const ViewEnlace = () => {
 
             setEnlaceData(prevState => ({ ...prevState, contratos: contratosMapped }));
         } catch (error) {
-            console.error('Error al obtener los contratos:', error);
-            message.error('Hubo un error al obtener los contratos.');
+            if (error.response && error.response.status === 404) {
+                console.warn('No se encontraron contratos para este enlace.');
+            } else {
+                console.error('Error al obtener los contratos:', error);
+                message.error('Hubo un error al obtener los contratos.');
+            }
         }
     };
+
 
     const handleSaveContract = async (updatedContract) => {
         const updatedContracts = enlaceData.contratos.map(contract =>

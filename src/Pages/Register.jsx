@@ -274,7 +274,7 @@ const Register = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="departamento"
-                                rules={[{ required: true, message: '¡Por favor selecciona tu departamento!' }]}
+                                rules={[{ required: false, message: '¡Por favor selecciona tu departamento!' }]}
                             >
                                 <Select
                                     showSearch
