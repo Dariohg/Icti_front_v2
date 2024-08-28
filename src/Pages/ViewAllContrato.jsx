@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {Form, Input, Button, Row, Col, DatePicker, message, Select, Typography, Divider, Spin, Popconfirm} from 'antd';
+import { Form, Input, Button, Row, Col, DatePicker, message, Select, Typography, Divider, Spin, Popconfirm } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import {ArrowLeftOutlined, DeleteOutlined, ExclamationCircleOutlined} from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
-import "../Styles/contrato.css"
+import "../Styles/contrato.css";
 import EnlaceInfo from '../components/EnlaceInfo';
-import ContratoTable from "../components/ContratoTable";  // Importa el componente
+import ContratoTable from "../components/ContratoTable";
 
 const { TextArea } = Input;
-const { Option } = Select;
-const { Title } = Typography;
-const {Text} = Typography;
+const { Title, Text } = Typography;
 
 const ViewAllContrato = () => {
     const navigate = useNavigate();
@@ -25,7 +23,8 @@ const ViewAllContrato = () => {
     const [tipoInstalacionOptions, setTipoInstalacionOptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [optionsLoaded, setOptionsLoaded] = useState(false);
-    const [enlaceId, setEnlaceId] = useState(null);  // Estado para almacenar el ID del enlace asociado
+    const [enlaceId, setEnlaceId] = useState(null);
+    const [estatus, setEstatus] = useState(null);
 
     const token = Cookies.get('token');
 
@@ -66,7 +65,8 @@ const ViewAllContrato = () => {
                     descripcion: contratoData.descripcion,
                 });
                 fetchVersionesContrato(tipoContrato.value);
-                setEnlaceId(contratoData.enlaceId);  // Establecer el ID del enlace
+                setEnlaceId(contratoData.enlaceId);
+                setEstatus(contratoData.estatus);
             }
 
             setLoading(false);
@@ -141,22 +141,21 @@ const ViewAllContrato = () => {
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
-            // Encontrar el ID correspondiente para la ubicación seleccionada
             const ubicacionSeleccionada = tipoInstalacionOptions.find(option => option.value === values.tipoInstalacion);
             const ubicacionId = ubicacionSeleccionada ? ubicacionSeleccionada.value : null;
 
             const dataToSave = {
-                estatus: 1, // O el estatus que necesites enviar
+                estatus: 1,
                 descripcion: values.descripcion,
                 fechaContrato: values.fechaContrato.format('YYYY-MM-DD'),
-                ubicacion: ubicacionId, // Enviar el ID en lugar del string
+                ubicacion: ubicacionId,
                 id_tipoContrato: values.tipoContrato,
                 id_versionContrato: values.versionContrato,
             };
 
             const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, dataToSave, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Asegúrate de incluir el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -174,11 +173,12 @@ const ViewAllContrato = () => {
             message.error('Hubo un error al actualizar el contrato. Por favor, inténtalo de nuevo.');
         }
     };
+
     const handleDelete = async () => {
         try {
             const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 },
                 data: { estatus_id: 3 }
             });
@@ -195,9 +195,26 @@ const ViewAllContrato = () => {
         }
     };
 
-    const handleRestore = () => {
-        // Esta función se llamará después de restaurar el contrato
-        fetchContrato(); // Recargar los datos
+    const handleRestore = async () => {
+        try {
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
+                estatus: 1
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 200) {
+                message.success('Contrato restaurado correctamente');
+                fetchContrato();
+            } else {
+                message.error('Error al restaurar el contrato');
+            }
+        } catch (error) {
+            console.error('Error al restaurar el contrato:', error);
+            message.error('Hubo un error al restaurar el contrato. Por favor, inténtalo de nuevo.');
+        }
     };
 
     const handleCancel = () => {
@@ -234,7 +251,6 @@ const ViewAllContrato = () => {
                 <Form
                     form={form}
                     layout="vertical"
-
                 >
                     <Row gutter={24}>
                         <Col span={24}>
@@ -281,7 +297,6 @@ const ViewAllContrato = () => {
                                 />
                             </Form.Item>
                         </Col>
-
                         <Col span={12}>
                             <Form.Item
                                 label="Versión de Contrato"
@@ -304,27 +319,68 @@ const ViewAllContrato = () => {
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Col span={12} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', marginTop: '40px' }}>
                             {!isEditing ? (
                                 <>
-                                    <Button type="primary" onClick={() => setIsEditing(true)} style={{ flex: 1, marginRight: 8 }}>
-                                        Actualizar
-                                    </Button>
-                                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                        Volver
-                                    </Button>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
+                                        <Button type="primary" onClick={() => setIsEditing(true)} style={{ width: '48%' }}>
+                                            Actualizar
+                                        </Button>
+                                        <Button danger type="text" onClick={handleCancel} style={{ width: '48%' }}>
+                                            Volver
+                                        </Button>
+                                    </div>
+                                    <Popconfirm
+                                        title="¿Estás seguro de que deseas restaurar este Contrato?"
+                                        icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
+                                        onConfirm={handleRestore}
+                                        okText="Sí"
+                                        cancelText="No"
+                                        okButtonProps={{
+                                            style: { backgroundColor: 'orange', borderColor: 'orange' }
+                                        }}                                    >
+                                        <Button
+                                            danger
+                                            style={{ borderColor: 'orange', color: 'orange', width: '100%' }}
+                                            disabled={estatus === 1}
+                                        >
+                                            Restaurar Contrato
+                                        </Button>
+                                    </Popconfirm>
                                 </>
                             ) : (
                                 <>
-                                    <Button type="primary" onClick={handleSave} style={{ flex: 1, marginRight: 8 }}>
-                                        Guardar
-                                    </Button>
-                                    <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>
-                                        Cancelar
-                                    </Button>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
+                                        <Button type="primary" onClick={handleSave} style={{ width: '48%' }}>
+                                            Guardar
+                                        </Button>
+                                        <Button danger type="text" onClick={handleCancel} style={{ width: '48%' }}>
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                    <Popconfirm
+                                        title="¿Estás seguro de que deseas restaurar este Contrato?"
+                                        icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
+                                        onConfirm={handleRestore}
+                                        okText="Sí"
+                                        cancelText="No"
+                                        okButtonProps={{
+                                            style: { backgroundColor: 'orange', borderColor: 'orange' }
+                                        }}
+                                    >
+                                        <Button
+                                            danger
+                                            style={{ borderColor: 'orange', color: 'orange', width: '100%' }}
+                                            disabled={estatus === 1}
+                                        >
+                                            Restaurar Contrato
+                                        </Button>
+                                    </Popconfirm>
                                 </>
                             )}
                         </Col>
+
+
                     </Row>
                 </Form>
                 <div>
@@ -346,9 +402,9 @@ const ViewAllContrato = () => {
                     </Popconfirm>
                 </div>
                 <Divider/>
-                <Text style={{fontSize: "20px"}}>Historial de modificaciones</Text>
-                <div style={{marginTop:"24px"}}>
-                    <ContratoTable onRestore={handleRestore} /> {/* Pasar la función de recarga como prop */}
+                <Text style={{ fontSize: "20px" }}>Historial de modificaciones</Text>
+                <div style={{ marginTop: "24px" }}>
+                    <ContratoTable onRestore={handleRestore} />
                 </div>
             </div>
         </>
