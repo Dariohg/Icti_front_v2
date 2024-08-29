@@ -146,7 +146,6 @@ const ViewAllContrato = () => {
             const ubicacionId = ubicacionSeleccionada ? ubicacionSeleccionada.value : null;
 
             const dataToSave = {
-                estatus: 1,
                 descripcion: values.descripcion,
                 fechaContrato: values.fechaContrato.format('YYYY-MM-DD'),
                 ubicacion: ubicacionId,
@@ -435,7 +434,7 @@ const ViewAllContrato = () => {
                 </div>
                 <Divider />
                 <div style={{ marginTop: "24px" }}>
-                    <ContratoTable onRestore={handleRestore} />
+                    <ContratoTable contratoId={id} onRestore={handleRestore} />
                 </div>
             </div>
         </>

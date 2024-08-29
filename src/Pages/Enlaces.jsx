@@ -88,7 +88,7 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados?estatus=1`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

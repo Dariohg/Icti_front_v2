@@ -140,22 +140,20 @@ const ViewContrato = () => {
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
-            // Encontrar el ID correspondiente para la ubicación seleccionada
             const ubicacionSeleccionada = tipoInstalacionOptions.find(option => option.value === values.tipoInstalacion);
             const ubicacionId = ubicacionSeleccionada ? ubicacionSeleccionada.value : null;
 
             const dataToSave = {
-                estatus: 1, // O el estatus que necesites enviar
                 descripcion: values.descripcion,
                 fechaContrato: values.fechaContrato.format('YYYY-MM-DD'),
-                ubicacion: ubicacionId, // Enviar el ID en lugar del string
+                ubicacion: ubicacionId,
                 id_tipoContrato: values.tipoContrato,
                 id_versionContrato: values.versionContrato,
             };
 
             const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, dataToSave, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Asegúrate de incluir el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -173,6 +171,7 @@ const ViewContrato = () => {
             message.error('Hubo un error al actualizar el contrato. Por favor, inténtalo de nuevo.');
         }
     };
+
 
 
     const handleDelete = async () => {

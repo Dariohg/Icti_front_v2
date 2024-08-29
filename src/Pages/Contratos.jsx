@@ -35,7 +35,7 @@ const Contratos = () => {
 
     const fetchContracts = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados?estatus=1`, {
                 headers: {
                     Authorization: `Bearer ${token}` // Agregar el token en los headers
                 }

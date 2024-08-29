@@ -1,42 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import {Table, Spin, message, Button, Popconfirm, Typography} from 'antd';
+import { Table, Spin, message, Button, Popconfirm, Typography } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
 
-const ContratoTable = ({ onRestore }) => {
+const ContratoTable = ({ contratoId, onRestore }) => {
     const [loading, setLoading] = useState(true);
-    const [contrato, setContrato] = useState(null);
+    const [contratos, setContratos] = useState([]);
 
     const token = Cookies.get('token');
-    const contratoId = 11; // ID estático por ahora, puedes cambiarlo dinámicamente si es necesario
-
-    const {Text} = Typography;
+    const { Text } = Typography;
 
     useEffect(() => {
         const fetchContrato = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/modified/detallados/${contratoId}`, {
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/modified/detallados/contratos/${contratoId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setContrato(response.data.contrato);
+
+                // Verifica si la respuesta contiene 'contratos'
+                if (response.data && response.data.contratos) {
+                    setContratos(response.data.contratos);
+                } else {
+                    message.error('No se encontraron historiales para este contrato.');
+                }
+
                 setLoading(false);
             } catch (error) {
-                console.error('Error al obtener el contrato:', error);
-                message.error('Hubo un error al obtener el contrato');
+                console.error('Error al obtener el historial del contrato:', error);
+                message.error('Hubo un error al obtener el historial del contrato');
                 setLoading(false);
             }
         };
 
-        fetchContrato();
+        if (contratoId) {
+            fetchContrato();
+        }
     }, [contratoId, token]);
 
-    const handleRestore = async () => {
+    const handleRestore = async (modifiedId) => {
         try {
             const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/restore/modified`, {
-                modifiedId: contrato.id
+                modifiedId: modifiedId // Enviar el modifiedId como parte del cuerpo de la solicitud
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -63,8 +70,8 @@ const ContratoTable = ({ onRestore }) => {
         );
     }
 
-    if (!contrato) {
-        return null; // No mostrar nada si no se encuentra el contrato
+    if (!contratos || contratos.length === 0) {
+        return <Text>No se encontraron historiales para este contrato.</Text>;
     }
 
     const columns = [
@@ -72,45 +79,47 @@ const ContratoTable = ({ onRestore }) => {
             title: 'Cliente',
             dataIndex: 'cliente',
             key: 'cliente',
-            render: () => `${contrato.nombreEnlace} ${contrato.apellidoPEnlace} ${contrato.apellidoMEnlace}`,
+            render: (text, record) => `${record.nombreEnlace} ${record.apellidoPEnlace} ${record.apellidoMEnlace}`,
         },
         {
             title: 'Correo',
-            dataIndex: 'correo',
-            key: 'correo',
-            render: () => contrato.correoEnlace,
+            dataIndex: 'correoEnlace',
+            key: 'correoEnlace',
         },
         {
             title: 'Fecha de Contrato',
             dataIndex: 'fechaContrato',
             key: 'fechaContrato',
-            render: () => moment(contrato.fechaContrato).format('YYYY-MM-DD'),
+            render: (text) => moment(text).format('YYYY-MM-DD'),
         },
         {
             title: 'Tipo de Contrato',
             dataIndex: 'tipoContrato',
             key: 'tipoContrato',
-            render: () => contrato.tipoContrato,
         },
         {
             title: 'Versión de Contrato',
             dataIndex: 'versionContrato',
             key: 'versionContrato',
-            render: () => contrato.versionContrato,
         },
         {
             title: 'Ubicación',
             dataIndex: 'ubicacion',
             key: 'ubicacion',
-            render: () => contrato.ubicacion,
+        },
+        {
+            title: 'Fecha de Respaldo',
+            dataIndex: 'backedUpAt',
+            key: 'backedUpAt',
+            render: (text) => moment(text).format('YYYY-MM-DD HH:mm:ss'),
         },
         {
             title: 'Acciones',
             key: 'acciones',
-            render: () => (
+            render: (text, record) => (
                 <Popconfirm
                     title="¿Estás seguro de que deseas restaurar este contrato?"
-                    onConfirm={handleRestore}
+                    onConfirm={() => handleRestore(record.id)} // Aquí se pasa el id de la modificación
                     okText="Sí"
                     cancelText="No"
                     okButtonProps={{ style: { backgroundColor: 'orange', borderColor: 'orange' } }}
@@ -126,9 +135,9 @@ const ContratoTable = ({ onRestore }) => {
         },
     ];
 
-    const expandedRowRender = () => (
+    const expandedRowRender = (record) => (
         <p style={{ margin: 0 }}>
-            <strong>Descripción:</strong> {contrato.descripcion}
+            <strong>Descripción:</strong> {record.descripcion}
         </p>
     );
 
@@ -136,14 +145,13 @@ const ContratoTable = ({ onRestore }) => {
         <div>
             <Text style={{ fontSize: "20px" }}>Historial de modificaciones</Text>
             <Table
-            columns={columns}
-            dataSource={[contrato]} // Pasar los datos del contrato como array
-            rowKey="id"
-            expandable={{ expandedRowRender }}
-            pagination={false} // Desactivar la paginación ya que solo hay un contrato
+                columns={columns}
+                dataSource={contratos} // Pasar los datos del contrato como array
+                rowKey="id"
+                expandable={{ expandedRowRender }}
+                pagination={true}
             />
         </div>
-
     );
 };
 
