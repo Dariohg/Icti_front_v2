@@ -401,7 +401,6 @@ const ViewAllContrato = () => {
                     </Popconfirm>
                 </div>
                 <Divider/>
-                <Text style={{ fontSize: "20px" }}>Historial de modificaciones</Text>
                 <div style={{ marginTop: "24px" }}>
                     <ContratoTable onRestore={handleRestore} />
                 </div>

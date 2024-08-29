@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Spin, message, Button, Popconfirm } from 'antd';
+import {Table, Spin, message, Button, Popconfirm, Typography} from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
@@ -10,6 +10,8 @@ const ContratoTable = ({ onRestore }) => {
 
     const token = Cookies.get('token');
     const contratoId = 11; // ID estático por ahora, puedes cambiarlo dinámicamente si es necesario
+
+    const {Text} = Typography;
 
     useEffect(() => {
         const fetchContrato = async () => {
@@ -131,13 +133,17 @@ const ContratoTable = ({ onRestore }) => {
     );
 
     return (
-        <Table
+        <div>
+            <Text style={{ fontSize: "20px" }}>Historial de modificaciones</Text>
+            <Table
             columns={columns}
             dataSource={[contrato]} // Pasar los datos del contrato como array
             rowKey="id"
             expandable={{ expandedRowRender }}
             pagination={false} // Desactivar la paginación ya que solo hay un contrato
-        />
+            />
+        </div>
+
     );
 };
 

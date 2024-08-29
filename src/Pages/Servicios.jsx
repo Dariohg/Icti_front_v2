@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import {Table, Button, Typography, Divider} from 'antd';
+import React, {useEffect, useState} from 'react';
+import { Table, Button, Typography, Divider, Input } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import LoadingSpinner from "../components/LoadingSpinner";
+import { SearchOutlined } from "@ant-design/icons";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 const Servicios = () => {
-    const [servicios, setServicios] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [searchText, setSearchText] = useState('');
     const [loading, setLoading] = useState(true);
+    const [originalData, setOriginalData] = useState([]);
 
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados`)
             .then(response => {
-                setServicios(response.data.servicios);
+                const servicios = response.data.servicios;
+                setOriginalData(servicios);
+                setFilteredData(servicios);
                 setLoading(false);
             })
             .catch(error => {
                 console.error('Error al obtener los servicios:', error);
             });
     }, []);
+
     const formatFecha = (fecha) => {
         const date = new Date(fecha);
         const day = String(date.getDate()).padStart(2, '0');
@@ -28,10 +36,30 @@ const Servicios = () => {
         return `${day}/${month}/${year}`;
     };
 
+    const handleSearch = (e) => {
+        const { value } = e.target;
+        setSearchText(value);
+        filterData(value);
+    };
+
+    const filterData = (searchText) => {
+        let filtered = originalData;
+
+        if (searchText) {
+            filtered = filtered.filter((item) =>
+                item.nombreSolicitante.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+
+        setFilteredData(filtered);
+    };
+
+    const handleViewDetails = (id) => {
+        navigate(`/viewServicio/${id}`);
+    };
+
     if (loading) {
-        return (
-            <LoadingSpinner/>
-        );
+        return <LoadingSpinner />;
     }
 
     const columns = [
@@ -76,7 +104,7 @@ const Servicios = () => {
             title: 'Acciones',
             key: 'acciones',
             render: (text, record) => (
-                <Button type="link">Ver Detalles</Button>
+                <Button type="link" onClick={() => handleViewDetails(record.id)}>Ver Detalles</Button>
             ),
             align: 'center',
         },
@@ -86,7 +114,16 @@ const Servicios = () => {
         <div>
             <Title level={2}>Servicios</Title>
             <Divider style={{ marginTop: '20px' }} />
-            <Table columns={columns} dataSource={servicios} rowKey="id" />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+                <Input
+                    placeholder="Buscar por nombre"
+                    value={searchText}
+                    onChange={handleSearch}
+                    style={{ width: 300 }}
+                    prefix={<SearchOutlined />}
+                />
+            </div>
+            <Table columns={columns} dataSource={filteredData} rowKey="id" />
         </div>
     );
 };
