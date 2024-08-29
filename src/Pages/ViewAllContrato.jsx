@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Row, Col, DatePicker, message, Select, Typography, Divider, Spin, Popconfirm } from 'antd';
+import { Form, Input, Button, Row, Col, DatePicker, message, Select, Typography, Divider, Popconfirm, Tag } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined, ExclamationCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined as WarningOutlined, CloseCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import moment from 'moment';
@@ -227,16 +227,50 @@ const ViewAllContrato = () => {
         }
     };
 
+    const renderStatusTag = (estatus) => {
+        switch (estatus) {
+            case 1:
+                return (
+                    <Tag color="green" icon={<CheckCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                        Activo
+                    </Tag>
+                );
+            case 2:
+                return (
+                    <Tag color="orange" icon={<WarningOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center', fontSize: "16px" }}>
+                        Inactivo
+                    </Tag>
+                );
+            case 3:
+                return (
+                    <Tag color="red" icon={<CloseCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                        Eliminado
+                    </Tag>
+                );
+            default:
+                return (
+                    <Tag color="gray" icon={<QuestionCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                        Desconocido
+                    </Tag>
+                );
+        }
+    };
+
     if (loading) {
         return (
-            <LoadingSpinner/>
+            <LoadingSpinner />
         );
     }
 
     return (
         <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                <Title level={3} style={{ margin: 0 }}>Detalles del contrato</Title>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Title level={3} style={{ margin: 0 }}>Detalles avanzados del contrato </Title>
+                    <div style={{marginLeft: "24px"}}>
+                        {renderStatusTag(estatus)}
+                    </div>
+                </div>
                 <Button
                     type="text"
                     icon={<ArrowLeftOutlined />}
@@ -245,7 +279,7 @@ const ViewAllContrato = () => {
                     Volver
                 </Button>
             </div>
-            <Divider/>
+            <Divider />
             <div style={{ padding: '24px' }}>
                 <Form
                     form={form}
@@ -337,7 +371,8 @@ const ViewAllContrato = () => {
                                         cancelText="No"
                                         okButtonProps={{
                                             style: { backgroundColor: 'orange', borderColor: 'orange' }
-                                        }}                                    >
+                                        }}
+                                    >
                                         <Button
                                             danger
                                             style={{ borderColor: 'orange', color: 'orange', width: '100%' }}
@@ -378,14 +413,12 @@ const ViewAllContrato = () => {
                                 </>
                             )}
                         </Col>
-
-
                     </Row>
                 </Form>
                 <div>
                     {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
                 </div>
-                <Divider/>
+                <Divider />
                 <div style={{ textAlign: 'center' }}>
                     <Popconfirm
                         title="¿Estás seguro de que deseas eliminar este Contrato?"
@@ -400,7 +433,7 @@ const ViewAllContrato = () => {
                         </Button>
                     </Popconfirm>
                 </div>
-                <Divider/>
+                <Divider />
                 <div style={{ marginTop: "24px" }}>
                     <ContratoTable onRestore={handleRestore} />
                 </div>

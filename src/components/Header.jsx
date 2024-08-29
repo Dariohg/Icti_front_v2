@@ -44,12 +44,6 @@ const AppHeader = () => {
                 <Menu.Item key="/home">
                     <Link to="/home">Home</Link>
                 </Menu.Item>
-                <Menu.Item key="/enlaces">
-                    <Link to="/enlaces">Enlaces</Link>
-                </Menu.Item>
-                <Menu.Item key="/allContratos">
-                    <Link to="/allContratos">Contratos</Link>
-                </Menu.Item>
                 <Menu.Item key="/usuarios">
                     <Link to="/usuarios">Usuarios</Link>
                 </Menu.Item>

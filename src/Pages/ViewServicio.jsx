@@ -6,13 +6,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 const ViewServicio = () => {
     const { id } = useParams();
-    const [enlaceOptions, setEnlaceOptions] = useState([]);
-    const [contratoOptions, setContratoOptions] = useState([]);
     const [diagnosticoTipo, setDiagnosticoTipo] = useState(null);
     const [servicioTipo, setServicioTipo] = useState(null);
     const [estadoServicio, setEstadoServicio] = useState(null);
@@ -50,7 +47,6 @@ const ViewServicio = () => {
                     nivel: servicio.nivel,
                     observaciones: servicio.observaciones,
                     envio: servicio.tipoEnvio,
-                    contrato: servicio.contratoId,
                     tipoDiagnostico: servicio.tipoServicio,
                     tipoServicio: servicio.tipoActividad,
                     estadoServicio: servicio.estadoServicio,
@@ -67,53 +63,12 @@ const ViewServicio = () => {
         };
 
         fetchServicio();
-        getEnlaces();
         getDependencias();
         getCargos();
         getTipoDiagnostico();
         getTipoServicio();
         getEstadoServicio();
     }, [id, form, token]);
-
-    const getEnlaces = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const enlaces = response.data.enlaces.map(enlace => ({
-                value: enlace.id,
-                label: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`
-            }));
-            setEnlaceOptions(enlaces);
-        } catch (error) {
-            console.error("Error al obtener los enlaces:", error);
-        }
-    };
-
-    const getContratos = async (enlaceId) => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${enlaceId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const contratos = response.data.contrato.map(contrato => ({
-                value: contrato.id,
-                label: contrato.descripcion
-            }));
-            setContratoOptions(contratos);
-        } catch (error) {
-            console.error("Error al obtener los contratos:", error);
-        }
-    };
-
-    const handleEnlaceChange = (value) => {
-        setContratoOptions([]);
-        form.resetFields(['contrato']);
-        getContratos(value);
-    };
 
     const getTipoDiagnostico = async () => {
         try {
@@ -225,7 +180,6 @@ const ViewServicio = () => {
             tipoEnvio: values.envio,
             estatus: 1,
             tipoServicioId: tipoDiagnosticoOptions.find(option => option.nombre === values.tipoDiagnostico)?.id,
-            contratoId: values.contrato,
             tipoActividadId: tipoServicioOptions.find(option => option.nombre === values.tipoServicio)?.id,
             estadoServicioId: estadoServicioOptions.find(option => option.nombre === values.estadoServicio)?.id,
             direccionId: values.direccion,
@@ -233,7 +187,7 @@ const ViewServicio = () => {
         };
 
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados/${id}`, formattedValues, {
+            await axios.patch(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados/${id}`, formattedValues, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -262,41 +216,6 @@ const ViewServicio = () => {
         >
             <h2>Reporte de Servicio</h2>
             <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item
-                        name="enlace"
-                        label="Nombre del Enlace"
-                        rules={[{ required: true, message: 'Por favor selecciona un enlace' }]}
-                    >
-                        <Select
-                            placeholder="Selecciona un enlace"
-                            showSearch
-                            onChange={handleEnlaceChange}
-                            options={enlaceOptions}
-                            disabled={!editMode}
-                            filterOption={(input, option) =>
-                                option.label.toLowerCase().includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        name="contrato"
-                        label="Contrato"
-                        rules={[{ required: true, message: 'Por favor selecciona un contrato' }]}
-                    >
-                        <Select
-                            placeholder="Selecciona un contrato"
-                            showSearch
-                            options={contratoOptions}
-                            disabled={!editMode}
-                            filterOption={(input, option) =>
-                                option.label.toLowerCase().includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
-                </Col>
                 <Col span={12}>
                     <Form.Item
                         name="solicitante"

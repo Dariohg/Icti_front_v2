@@ -183,7 +183,7 @@ const Register = () => {
                     initialValues={{ remember: true }}
                     onFinish={onFinish}
                 >
-                    <h2 className="register-title">Registro</h2>
+                    <h2 className="register-title">Registrar Usuario</h2>
                     <Row gutter={16}>
                         <Col span={24}>
                             <Form.Item

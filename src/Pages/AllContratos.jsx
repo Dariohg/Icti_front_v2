@@ -332,7 +332,7 @@ const AllContratos = () => {
 
     return (
         <div>
-            <Title level={2}>Contratos</Title>
+            <Title level={2}>Listado Completo de Contratos</Title>
             <Divider style={{ marginTop: '20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <Button

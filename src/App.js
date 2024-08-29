@@ -17,6 +17,8 @@ import Servicios from "./Pages/Servicios";
 import AllContratos from "./Pages/AllContratos";
 import ViewAllContrato from "./Pages/ViewAllContrato";
 import ViewServicio from "./Pages/ViewServicio";
+import AllEnlaces from "./Pages/AllEnlaces";
+import ViewAllEnlace from "./Pages/ViewAllEnlace";
 
 function App() {
     return (
@@ -24,8 +26,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Navigate to="login" />} />
                 <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-
+                <Route path="register" element={<Register/>} />
 
                 <Route path="home" element={<Render><Home /></Render>} />
                 <Route path="enlaces" element={<Render><Enlaces /></Render>} />
@@ -38,8 +39,10 @@ function App() {
                 <Route path="usuarios" element={<Render><Usuarios/></Render>}/>
                 <Route path="servicios" element={<Render><Servicios/></Render>}/>
 
+                <Route path="allEnlaces" element={<Render><AllEnlaces/></Render>}/>
                 <Route path="allContratos" element={<Render><AllContratos/></Render>}/>
                 <Route path="viewAllContrato/:id" element={<Render><ViewAllContrato/></Render>}/>
+                <Route path="viewallEnlace/:id" element={<Render><ViewAllEnlace/></Render>}/>
                 <Route path="viewServicio/:id" element={<Render><ViewServicio/></Render>}/>
                 <Route path="*" element={<NotFound />} /> {/* Ruta para páginas no encontradas */}
             </Routes>

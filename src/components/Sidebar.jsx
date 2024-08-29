@@ -8,6 +8,8 @@ import {
     MenuUnfoldOutlined,
     MenuFoldOutlined,
     LinkOutlined,
+    SettingOutlined,
+    FileProtectOutlined, ProfileOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import '../Styles/sidebar.css'; // Importar estilos personalizados
@@ -102,6 +104,26 @@ const Sidebar = ({ onCollapse }) => {
                         <Link to="/addServicio">
                             <PlusOutlined />
                             Agregar Servicios
+                        </Link>
+                    </Menu.Item>
+                </SubMenu>
+                <SubMenu key="avanzados" icon={<SettingOutlined />} title="Gestión">
+                    <Menu.Item key="/allEnlaces">
+                        <Link to="/allenlaces">
+                            <FileTextOutlined />
+                            Enlaces
+                        </Link>
+                    </Menu.Item>
+                    <Menu.Item key="/allContratos">
+                        <Link to="/allContratos">
+                            <FileProtectOutlined />
+                            Contratos
+                        </Link>
+                    </Menu.Item>
+                    <Menu.Item key="allServicios">
+                        <Link to="/allServicios">
+                            <ProfileOutlined />
+                            Servicios
                         </Link>
                     </Menu.Item>
                 </SubMenu>
