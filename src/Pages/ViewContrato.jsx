@@ -179,8 +179,7 @@ const ViewContrato = () => {
             const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}` // Agregar el token en los headers
-                },
-                data: { estatus_id: 3 }
+                }
             });
             if (response.status === 200) {
                 message.success('Contrato eliminado correctamente');

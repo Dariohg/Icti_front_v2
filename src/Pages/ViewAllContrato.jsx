@@ -180,7 +180,6 @@ const ViewAllContrato = () => {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
-                data: { estatus_id: 3 }
             });
             if (response.status === 200) {
                 message.success('Contrato eliminado correctamente');
@@ -197,8 +196,8 @@ const ViewAllContrato = () => {
 
     const handleRestore = async () => {
         try {
-            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
-                estatus: 1
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/restore/deleted`, {
+                contratoId: id
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
