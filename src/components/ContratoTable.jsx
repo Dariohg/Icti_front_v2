@@ -29,8 +29,14 @@ const ContratoTable = ({ contratoId, onRestore }) => {
 
                 setLoading(false);
             } catch (error) {
-                console.error('Error al obtener el historial del contrato:', error);
-                message.error('Hubo un error al obtener el historial del contrato');
+                if (error.response && error.response.status === 404) {
+                    // Si es un error 404, simplemente ignóralo
+                    console.warn('No se encontraron contratos modificados.');
+                } else {
+                    // Manejar otros errores
+                    console.error('Error al obtener los datos del contrat:', error);
+                    message.error('Hubo un error al obtener los datos del contrato.');
+                }
                 setLoading(false);
             }
         };
@@ -70,9 +76,7 @@ const ContratoTable = ({ contratoId, onRestore }) => {
         );
     }
 
-    if (!contratos || contratos.length === 0) {
-        return <Text>No se encontraron historiales para este contrato.</Text>;
-    }
+
 
     const columns = [
         {
@@ -143,7 +147,7 @@ const ContratoTable = ({ contratoId, onRestore }) => {
 
     return (
         <div>
-            <Text style={{ fontSize: "20px" }}>Historial de modificaciones</Text>
+            <Text style={{ fontSize: "20px", marginBottom: "24px" }}>Historial de modificaciones</Text>
             <Table
                 columns={columns}
                 dataSource={contratos} // Pasar los datos del contrato como array

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message, Spin, Badge} from 'antd';
+import { Table, Button, Input, Tag, Space, Typography, Divider, TreeSelect, Select, message, Spin, Badge } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -108,12 +108,11 @@ const AllEnlaces = () => {
                 correo: enlace.correo,
                 telefono: enlace.telefono,
                 direccion: enlace.direccion,
-                adscripcion: enlace.adscripcion,
+                dependencia: enlace.dependencia, // Agregada la dependencia
                 cargo: enlace.cargo,
                 estatus: enlace.estatus, // Asegúrate de que este valor está siendo asignado
                 contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id),
             }));
-
 
             setOriginalData(enlacesMapped);
             setFilteredData(enlacesMapped);
@@ -250,15 +249,15 @@ const AllEnlaces = () => {
             align: 'center',
         },
         {
-            title: 'Dirección',
-            dataIndex: 'direccion',
-            key: 'direccion',
+            title: 'Dependencia', // Agregada la columna de dependencia
+            dataIndex: 'dependencia',
+            key: 'dependencia',
             align: 'center',
         },
         {
-            title: 'Adscripción',
-            dataIndex: 'adscripcion',
-            key: 'adscripcion',
+            title: 'Dirección',
+            dataIndex: 'direccion',
+            key: 'direccion',
             align: 'center',
         },
         {
@@ -294,14 +293,14 @@ const AllEnlaces = () => {
                         badgeText = 'Desconocido';
                 }
                 return(
-                <Space size="middle" align="center">
-                    <Button type="link" icon={<EyeOutlined />} onClick={() => navigate(`/viewAllEnlace/${record.key}`)}>
-                        Ver
-                    </Button>
-                    <Badge.Ribbon text={badgeText} color={color} style={{ position: 'absolute', right: '-25px', top: '-40px' }}>
-                        <span></span>
-                    </Badge.Ribbon>
-                </Space>
+                    <Space size="middle" align="center">
+                        <Button type="link" icon={<EyeOutlined />} onClick={() => navigate(`/viewAllEnlace/${record.key}`)}>
+                            Ver
+                        </Button>
+                        <Badge.Ribbon text={badgeText} color={color} style={{ position: 'absolute', right: '-25px', top: '-40px' }}>
+                            <span></span>
+                        </Badge.Ribbon>
+                    </Space>
                 );
             },
         },

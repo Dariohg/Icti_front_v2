@@ -153,7 +153,7 @@ const AddEnlace = () => {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (values) => {
         let userId = null;
 
         if (token) {
@@ -166,18 +166,18 @@ const AddEnlace = () => {
         }
 
         const enlaceData = {
-            nombre: formData.nombre || null,
-            apellidoP: formData.apellidoPaterno || null,
-            apellidoM: formData.apellidoMaterno || null,
-            correo: formData.correo || null,
-            telefono: formData.telefono || null,
-            estatus: 1,  // Valor fijo
+            nombre: values.nombre,
+            apellidoP: values.apellidoPaterno,
+            apellidoM: values.apellidoMaterno,
+            correo: values.correo,
+            telefono: values.telefono,
+            estatus: 1,
             adscripcion_id: selectedDepartamento || null,  // Puede ser null si no está definido
-            cargo_id: selectedCargo || null,  // Asegúrate de que no sea undefined
-            auth_user_id: userId || null,  // Si userId es undefined, se envía como null
-            tipoPersona_id: 1,  // Valor fijo, asegúrate de que 1 es el valor correcto
-            direccion_id: selectedDireccion || null,  // Verifica que selectedDireccion no sea undefined
-            dependencia_id: selectedDependencia || null  // Verifica que selectedDependencia no sea undefined
+            cargo_id: selectedCargo,
+            auth_user_id: userId,
+            tipoPersona_id: 1,
+            direccion_id: selectedDireccion,
+            dependencia_id: selectedDependencia
         };
 
         try {
@@ -204,8 +204,6 @@ const AddEnlace = () => {
         }
     };
 
-
-
     const handleCancel = () => {
         navigate('/enlaces');
     };
@@ -220,7 +218,11 @@ const AddEnlace = () => {
         <Form layout="vertical" onFinish={handleSubmit}>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Form.Item label="Dependencia">
+                    <Form.Item
+                        label="Dependencia"
+                        name="dependencia"
+                        rules={[{ required: true, message: '¡Por favor seleccione una dependencia!' }]}
+                    >
                         <Select
                             value={selectedDependencia}
                             onChange={handleDependenciaChange}
@@ -230,7 +232,11 @@ const AddEnlace = () => {
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="Dirección">
+                    <Form.Item
+                        label="Dirección"
+                        name="direccion"
+                        rules={[{ required: true, message: '¡Por favor seleccione una dirección!' }]}
+                    >
                         <Select
                             value={selectedDireccion}
                             onChange={handleDireccionChange}
@@ -243,7 +249,10 @@ const AddEnlace = () => {
             </Row>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Form.Item label="Departamento">
+                    <Form.Item
+                        label="Departamento"
+                        name="departamento"
+                    >
                         <Select
                             value={selectedDepartamento}
                             onChange={handleDepartamentoChange}
@@ -254,41 +263,71 @@ const AddEnlace = () => {
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="Nombre">
+                    <Form.Item
+                        label="Nombre"
+                        name="nombre"
+                        rules={[{ required: true, message: '¡Por favor ingrese el nombre!' }]}
+                    >
                         <Input onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
                     </Form.Item>
                 </Col>
             </Row>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Form.Item label="Apellido Paterno">
+                    <Form.Item
+                        label="Apellido Paterno"
+                        name="apellidoPaterno"
+                        rules={[{ required: true, message: '¡Por favor ingrese el apellido paterno!' }]}
+                    >
                         <Input onChange={(e) => setFormData({ ...formData, apellidoPaterno: e.target.value })} />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="Apellido Materno">
+                    <Form.Item
+                        label="Apellido Materno"
+                        name="apellidoMaterno"
+                        rules={[{ required: true, message: '¡Por favor ingrese el apellido materno!' }]}
+                    >
                         <Input onChange={(e) => setFormData({ ...formData, apellidoMaterno: e.target.value })} />
                     </Form.Item>
                 </Col>
             </Row>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Form.Item label="Correo">
+                    <Form.Item
+                        label="Correo"
+                        name="correo"
+                        rules={[{ required: true, message: '¡Por favor ingrese el correo electrónico!', type: 'email' }]}
+                    >
                         <Input onChange={(e) => setFormData({ ...formData, correo: e.target.value })} />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="Teléfono">
+                    <Form.Item
+                        label="Teléfono"
+                        name="telefono"
+                        rules={[{ required: true, message: '¡Por favor ingrese el número de teléfono!' }]}
+                    >
                         <Input
-                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, '') })}
+                            value={formData.telefono}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                setFormData({ ...formData, telefono: value });
+                            }}
                             maxLength={10}
+                            placeholder="Ingrese su número de teléfono"
                         />
                     </Form.Item>
+
                 </Col>
             </Row>
             <Row gutter={24}>
                 <Col span={12}>
-                    <Form.Item label="Cargo">
+                    <Form.Item
+                        label="Cargo"
+                        name="cargo"
+                        rules={[{ required: true, message: '¡Por favor seleccione un cargo!' }]}
+                    >
                         <Select
                             value={selectedCargo}
                             onChange={handleCargoChange}
@@ -299,7 +338,7 @@ const AddEnlace = () => {
                 </Col>
 
                 <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Button type="primary" style={{ flex: 1, marginRight: 8 }} onClick={handleSubmit}>
+                    <Button type="primary" htmlType="submit" style={{ flex: 1, marginRight: 8 }}>
                         Agregar Enlace
                     </Button>
                     <Button danger type="text" onClick={handleCancel} style={{ flex: 1 }}>

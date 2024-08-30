@@ -21,6 +21,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import EditContractDrawer from '../components/EditContractDrawer';
 import LoadingSpinner from "../components/LoadingSpinner";
+import EnlaceTable from "../components/EnlaceTable";
 
 const { Text } = Typography;
 const { Title } = Typography;

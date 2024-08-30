@@ -212,7 +212,8 @@ const ViewContrato = () => {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
+            <div style={{padding: "24px"}}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Title level={3} style={{ margin: 0 }}>Detalles del contrato</Title>
                 <Button
                     type="text"
@@ -226,7 +227,6 @@ const ViewContrato = () => {
             <Form
                 form={form}
                 layout="vertical"
-                style={{ padding: '24px' }}
             >
                 {/* Formulario de contrato aquí */}
                 <Row gutter={24}>
@@ -320,7 +320,7 @@ const ViewContrato = () => {
                     </Col>
                 </Row>
             </Form>
-            <div style={{ padding: '24px' }}>
+            <div>
                 {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
             </div>
             <div style={{ textAlign: 'center' }}>
@@ -336,6 +336,7 @@ const ViewContrato = () => {
                         Eliminar Contrato
                     </Button>
                 </Popconfirm>
+            </div>
             </div>
         </>
     );

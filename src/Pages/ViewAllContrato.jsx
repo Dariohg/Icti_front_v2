@@ -283,7 +283,8 @@ const ViewAllContrato = () => {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
+            <div style={{padding:"24px"}}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Title level={3} style={{ margin: 0 }}>Detalles avanzados del contrato</Title>
                     <div style={{ marginLeft: "24px" }}>
@@ -299,7 +300,7 @@ const ViewAllContrato = () => {
                 </Button>
             </div>
             <Divider />
-            <div style={{ padding: '24px' }}>
+            <div>
                 <Form
                     form={form}
                     layout="vertical"
@@ -436,7 +437,7 @@ const ViewAllContrato = () => {
                         </Col>
                     </Row>
                 </Form>
-                <div>
+                <div style={{marginTop: "16px"}}>
                     {enlaceId && <EnlaceInfo enlaceId={enlaceId} />}
                 </div>
                 <Divider />
@@ -458,6 +459,7 @@ const ViewAllContrato = () => {
                 <div style={{ marginTop: "24px" }}>
                     <ContratoTable contratoId={id} onRestore={handleRestore} />
                 </div>
+            </div>
             </div>
         </>
     );
