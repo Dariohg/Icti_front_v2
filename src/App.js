@@ -19,6 +19,7 @@ import ViewAllContrato from "./Pages/ViewAllContrato";
 import ViewServicio from "./Pages/ViewServicio";
 import AllEnlaces from "./Pages/AllEnlaces";
 import ViewAllEnlace from "./Pages/ViewAllEnlace";
+import AddServicioP1 from "./Pages/AddServicioP1";
 
 function App() {
     return (
@@ -34,7 +35,8 @@ function App() {
                 <Route path="viewEnlace/:id" element={<Render><ViewEnlace /></Render>} />
                 <Route path="contratos" element={<Render><Contratos /></Render>} />
                 <Route path="addContrato" element={<Render><AddContrato /></Render>} />
-                <Route path="addServicio" element={<Render><AddServicios/></Render>}/>
+                <Route path="addServicioP1" element={<Render><AddServicioP1/></Render>}/>
+                <Route path="addServicio/:id" element={<Render><AddServicios/></Render>}/>
                 <Route path="viewContrato/:id" element={<Render><ViewContrato/></Render>}/>
                 <Route path="usuarios" element={<Render><Usuarios/></Render>}/>
                 <Route path="servicios" element={<Render><Servicios/></Render>}/>

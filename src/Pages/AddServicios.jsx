@@ -3,17 +3,15 @@ import { Form, Input, Button, Row, Col, Select, DatePicker, TimePicker, Radio, m
 import axios from 'axios';
 import moment from 'moment';
 import '../Styles/addServicios.css';
-import { useNavigate } from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import Cookies from "js-cookie";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 const AddServicios = () => {
-    const [enlaceOptions, setEnlaceOptions] = useState([]);
-    const [contratoOptions, setContratoOptions] = useState([]);
-    const [selectedEnlaceId, setSelectedEnlaceId] = useState(null);
+    const location = useLocation();
+    const { contratoId } = location.state || {}; // Extrae el contratoId desde el estado
     const [diagnosticoTipo, setDiagnosticoTipo] = useState(null);
     const [servicioTipo, setServicioTipo] = useState(null);
     const [estadoServicio, setEstadoServicio] = useState(null);
@@ -29,7 +27,6 @@ const AddServicios = () => {
     const token = Cookies.get('token'); // Obtener el token desde las cookies
 
     useEffect(() => {
-        getEnlaces();
         getDependencias();
         getCargos();
         getTipoDiagnostico();
@@ -39,50 +36,6 @@ const AddServicios = () => {
 
     const navigate = useNavigate();
 
-    const getEnlaces = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/estatus/1`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const enlaces = response.data.enlaces;
-            const enlacesMapped = enlaces.map(enlace => ({
-                value: enlace.id,
-                label: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`
-            }));
-            setLoading(false);
-            setEnlaceOptions(enlacesMapped);
-        } catch (error) {
-            console.error("Error al obtener los enlaces:", error);
-        }
-    };
-
-    const getContratos = async (enlaceId) => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados/enlaces/${enlaceId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const contratos = response.data.contrato;
-            const contratosMapped = contratos.map(contrato => ({
-                value: contrato.id,
-                label: contrato.descripcion
-            }));
-            setContratoOptions(contratosMapped);
-        } catch (error) {
-            console.error("Error al obtener los contratos:", error);
-        }
-    };
-
-    const handleEnlaceChange = (value) => {
-        setSelectedEnlaceId(value);
-        setContratoOptions([]); // Limpiar opciones de contrato
-        form.resetFields(['contrato']); // Reiniciar el campo de contrato en el formulario
-        getContratos(value); // Cargar nuevos contratos
-    };
-
     const getTipoDiagnostico = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/tipos/servicio`, {
@@ -91,6 +44,7 @@ const AddServicios = () => {
                 }
             });
             const tipos = response.data.tipos;
+            setLoading(false);
             setTipoDiagnosticoOptions(tipos);
         } catch (error) {
             console.error("Error al obtener los tipos de diagnóstico:", error);
@@ -199,9 +153,8 @@ const AddServicios = () => {
             tipoEnvio: values.envio,
             estatus: 1, // Siempre 1
             tipoServicioId: tipoDiagnosticoOptions.find(option => option.nombre === values.tipoDiagnostico)?.id,
-            contratoId: values.contrato,
+            contratoId: contratoId,  // Usar el contratoId recibido como prop
             tipoActividadId: tipoServicioOptions.find(option => option.nombre === values.tipoServicio)?.id,
-
             estadoServicioId: estadoServicioOptions.find(option => option.nombre === values.estadoServicio)?.id,
             direccionId: values.direccion,
             cargoId: values.cargo,
@@ -217,7 +170,6 @@ const AddServicios = () => {
             });
             message.success('Servicio guardado exitosamente');
             navigate('/servicios');
-
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
             message.error('Hubo un error al guardar el servicio. Por favor, inténtelo de nuevo.');
@@ -243,39 +195,6 @@ const AddServicios = () => {
         >
             <h2>Reporte de Servicio</h2>
             <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item
-                        name="enlace"
-                        label="Nombre del Enlace"
-                        rules={[{ required: true, message: 'Por favor selecciona un enlace' }]}
-                    >
-                        <Select
-                            placeholder="Selecciona un enlace"
-                            showSearch
-                            onChange={handleEnlaceChange}
-                            options={enlaceOptions}
-                            filterOption={(input, option) =>
-                                option.label.toLowerCase().includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item
-                        name="contrato"
-                        label="Contrato"
-                        rules={[{ required: true, message: 'Por favor selecciona un contrato' }]}
-                    >
-                        <Select
-                            placeholder="Selecciona un contrato"
-                            showSearch
-                            options={contratoOptions}
-                            filterOption={(input, option) =>
-                                option.label.toLowerCase().includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
-                </Col>
                 <Col span={12}>
                     <Form.Item
                         name="solicitante"
