@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, Select, message, Tooltip, Spin } from 'antd';
+import { Form, Input, Button, Row, Col, Select, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,12 +17,11 @@ const Register = () => {
     const [cargos, setCargos] = useState([]);
     const [selectedDependencia, setSelectedDependencia] = useState(null);
     const [selectedDireccion, setSelectedDireccion] = useState(null);
-    const [passwordError, setPasswordError] = useState('');
+    const [selectedDepartamento, setSelectedDepartamento] = useState(null);
     const [loading, setLoading] = useState(true);
     const token = Cookies.get('token');
 
     const validatePassword = (_, value) => {
-
         const lengthRule = value.length >= 8;
         const capitalRule = /[A-Z]/.test(value);
         const numberRule = /\d/.test(value);
@@ -32,7 +31,7 @@ const Register = () => {
             return Promise.reject('La contraseña debe tener al menos 8 caracteres');
         } else if (value.length > 0 && !capitalRule) {
             return Promise.reject('Debe contener al menos una mayúscula');
-        } else if (value.length > 0 && !numberRule || !specialCharRule){
+        } else if (value.length > 0 && (!numberRule || !specialCharRule)) {
             return Promise.reject('Debe contener un número y un carácter especial');
         } else {
             return Promise.resolve();
@@ -85,23 +84,6 @@ const Register = () => {
         fetchCargos();
     }, [token]);
 
-    useEffect(() => {
-        if (selectedDependencia) {
-            getDirecciones(selectedDependencia);
-        } else {
-            setDirecciones([]);
-            setDepartamentos([]);
-        }
-    }, [selectedDependencia]);
-
-    useEffect(() => {
-        if (selectedDireccion) {
-            getDepartamentos(selectedDireccion);
-        } else {
-            setDepartamentos([]);
-        }
-    }, [selectedDireccion]);
-
     const getDirecciones = async (dependenciaId) => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
@@ -114,6 +96,8 @@ const Register = () => {
                 label: dir.nombre
             }));
             setDirecciones(direccionesMapped);
+            setSelectedDireccion(null); // Reset Dirección
+            setDepartamentos([]); // Clear Departamentos
         } catch (error) {
             console.error("Error al obtener las direcciones:", error);
         }
@@ -131,9 +115,30 @@ const Register = () => {
                 label: dep.nombre
             }));
             setDepartamentos(departamentosMapped);
+            setSelectedDepartamento(null); // Reset Departamento
         } catch (error) {
             console.error("Error al obtener departamentos:", error);
         }
+    };
+
+    const handleDependenciaChange = async (value) => {
+        setSelectedDependencia(value);
+        setSelectedDireccion(null);
+        setSelectedDepartamento(null);
+        setDirecciones([]);
+        setDepartamentos([]);
+        await getDirecciones(value);
+    };
+
+    const handleDireccionChange = async (value) => {
+        setSelectedDireccion(value);
+        setSelectedDepartamento(null);
+        setDepartamentos([]);
+        await getDepartamentos(value);
+    };
+
+    const handleDepartamentoChange = (value) => {
+        setSelectedDepartamento(value);
     };
 
     const onFinish = async (values) => {
@@ -169,9 +174,7 @@ const Register = () => {
     };
 
     if (loading) {
-        return (
-            <LoadingSpinner/>
-        );
+        return <LoadingSpinner />;
     }
 
     return (
@@ -234,10 +237,11 @@ const Register = () => {
                                     showSearch
                                     placeholder="Selecciona una dependencia"
                                     optionFilterProp="children"
-                                    onChange={value => setSelectedDependencia(value)}
+                                    onChange={handleDependenciaChange}
                                     filterOption={(input, option) =>
                                         option.children.toLowerCase().includes(input.toLowerCase())
                                     }
+                                    value={selectedDependencia}
                                 >
                                     {Array.isArray(dependencias) && dependencias.map(dep => (
                                         <Option key={dep.value} value={dep.value}>
@@ -256,11 +260,12 @@ const Register = () => {
                                     showSearch
                                     placeholder="Selecciona una dirección"
                                     optionFilterProp="children"
-                                    onChange={value => setSelectedDireccion(value)}
+                                    onChange={handleDireccionChange}
                                     filterOption={(input, option) =>
                                         option.children.toLowerCase().includes(input.toLowerCase())
                                     }
                                     disabled={!selectedDependencia}
+                                    value={selectedDireccion}
                                 >
                                     {Array.isArray(direcciones) && direcciones.map(dir => (
                                         <Option key={dir.value} value={dir.value}>
@@ -283,6 +288,8 @@ const Register = () => {
                                         option.children.toLowerCase().includes(input.toLowerCase())
                                     }
                                     disabled={!selectedDireccion}
+                                    value={selectedDepartamento}
+                                    onChange={handleDepartamentoChange}
                                 >
                                     {Array.isArray(departamentos) && departamentos.map(dep => (
                                         <Option key={dep.value} value={dep.value}>

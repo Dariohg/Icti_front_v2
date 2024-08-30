@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {Input, Button, Form, Row, Col, message, Spin} from 'antd';
+import { Input, Button, Form, Row, Col, message, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import Dropdown from '../components/Dropdown';
 import axios from 'axios';
-import Cookies from 'js-cookie'; // Importar js-cookie para manejar cookies
+import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
-import LoadingSpinner from "../components/LoadingSpinner"; // Importar jwtDecode correctamente
+import LoadingSpinner from "../components/LoadingSpinner";
+
+const { Option } = Select;
 
 const AddEnlace = () => {
     const [dependenciaOptions, setDependenciaOptions] = useState([]);
@@ -21,7 +22,7 @@ const AddEnlace = () => {
 
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const token = Cookies.get('token'); // Obtener el token desde las cookies
+    const token = Cookies.get('token');
 
     useEffect(() => {
         getDependencias();
@@ -32,7 +33,7 @@ const AddEnlace = () => {
         try {
             const dependenciasRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}dependencias/`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const dependencias = dependenciasRes.data.dependencias;
@@ -51,7 +52,7 @@ const AddEnlace = () => {
         try {
             const cargosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}cargos/`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const cargos = cargosRes.data.cargos;
@@ -69,7 +70,7 @@ const AddEnlace = () => {
         try {
             const departamentosRes = await axios.get(`${process.env.REACT_APP_BACKEND_URI}departamentos/direcciones/${direccionId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const departamentos = departamentosRes.data.departamentos;
@@ -87,7 +88,7 @@ const AddEnlace = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}direcciones/dependencias/${dependenciaId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
             const direcciones = response.data.direcciones;
@@ -157,34 +158,32 @@ const AddEnlace = () => {
 
         if (token) {
             try {
-                // Decodificar el token para obtener el ID del usuario
                 const decodedToken = jwtDecode(token);
-                userId = decodedToken.id; // Ajusta el nombre del campo según tu token
+                userId = decodedToken.id;
             } catch (error) {
                 console.error('Error decodificando el token JWT:', error);
             }
         }
 
         const enlaceData = {
-            nombre: formData.nombre,
-            apellidoP: formData.apellidoPaterno,
-            apellidoM: formData.apellidoMaterno,
-            correo: formData.correo,
-            telefono: formData.telefono,
-            estatus: 1, // Valor provisional
-            adscripcion_id: selectedDepartamento, // ID del departamento seleccionado
-            cargo_id: selectedCargo, // ID del cargo seleccionado
-            auth_user_id: userId, // ID del usuario obtenido del token
-            tipoPersona_id: 1, // Valor provisional
-            direccion_id: selectedDireccion, // ID de la dirección seleccionada
+            nombre: formData.nombre || null,
+            apellidoP: formData.apellidoPaterno || null,
+            apellidoM: formData.apellidoMaterno || null,
+            correo: formData.correo || null,
+            telefono: formData.telefono || null,
+            estatus: 1,  // Valor fijo
+            adscripcion_id: selectedDepartamento || null,  // Puede ser null si no está definido
+            cargo_id: selectedCargo || null,  // Asegúrate de que no sea undefined
+            auth_user_id: userId || null,  // Si userId es undefined, se envía como null
+            tipoPersona_id: 1,  // Valor fijo, asegúrate de que 1 es el valor correcto
+            direccion_id: selectedDireccion || null,  // Verifica que selectedDireccion no sea undefined
+            dependencia_id: selectedDependencia || null  // Verifica que selectedDependencia no sea undefined
         };
-
-        console.log('enlaceData:', enlaceData);
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URI}enlaces`, enlaceData, {
                 headers: {
-                    Authorization: `Bearer ${token}` // Agregar el token en los headers
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -196,10 +195,16 @@ const AddEnlace = () => {
             message.success('Enlace agregado exitosamente');
             navigate('/enlaces');
         } catch (error) {
-            console.error('Error al agregar el enlace:', error);
-            message.error('Hubo un error al agregar el enlace');
+            if (error.response && error.response.status === 435) {
+                message.error('Ya hay un enlace para esta dependencia');
+            } else {
+                console.error('Error al agregar el enlace:', error);
+                message.error('Hubo un error al agregar el enlace');
+            }
         }
     };
+
+
 
     const handleCancel = () => {
         navigate('/enlaces');
@@ -216,20 +221,21 @@ const AddEnlace = () => {
             <Row gutter={24}>
                 <Col span={12}>
                     <Form.Item label="Dependencia">
-                        <Dropdown
+                        <Select
                             value={selectedDependencia}
                             onChange={handleDependenciaChange}
                             options={dependenciaOptions}
+                            placeholder="Seleccione una dependencia"
                         />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
                     <Form.Item label="Dirección">
-                        <Dropdown
-                            id="direccion"
+                        <Select
                             value={selectedDireccion}
                             onChange={handleDireccionChange}
                             options={direccionOptions}
+                            placeholder="Seleccione una dirección"
                             disabled={!selectedDependencia}
                         />
                     </Form.Item>
@@ -238,11 +244,11 @@ const AddEnlace = () => {
             <Row gutter={24}>
                 <Col span={12}>
                     <Form.Item label="Departamento">
-                        <Dropdown
-                            id="departamento"
+                        <Select
                             value={selectedDepartamento}
                             onChange={handleDepartamentoChange}
                             options={departamentoOptions}
+                            placeholder="Seleccione un departamento"
                             disabled={!selectedDireccion}
                         />
                     </Form.Item>
@@ -283,11 +289,11 @@ const AddEnlace = () => {
             <Row gutter={24}>
                 <Col span={12}>
                     <Form.Item label="Cargo">
-                        <Dropdown
-                            id="cargo"
+                        <Select
                             value={selectedCargo}
                             onChange={handleCargoChange}
                             options={cargoOptions}
+                            placeholder="Seleccione un cargo"
                         />
                     </Form.Item>
                 </Col>

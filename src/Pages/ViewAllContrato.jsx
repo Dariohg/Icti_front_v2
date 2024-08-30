@@ -183,7 +183,6 @@ const ViewAllContrato = () => {
             });
             if (response.status === 200) {
                 message.success('Contrato eliminado correctamente');
-                navigate('/contratos');
             } else {
                 message.error('Error al eliminar el contrato.');
                 console.error('Error en la respuesta:', response);
@@ -216,6 +215,28 @@ const ViewAllContrato = () => {
         }
     };
 
+    const handleFinalize = async () => {
+        try {
+            const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URI}contratos/${id}`, {
+                estatus: 2
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 200) {
+                message.success('Contrato finalizado correctamente');
+                fetchContrato();
+            } else {
+                message.error('Error al finalizar el contrato');
+            }
+        } catch (error) {
+            console.error('Error al finalizar el contrato:', error);
+            message.error('Hubo un error al finalizar el contrato. Por favor, inténtalo de nuevo.');
+        }
+    };
+
     const handleCancel = () => {
         if (isEditing) {
             setIsEditing(false);
@@ -229,7 +250,7 @@ const ViewAllContrato = () => {
         switch (estatus) {
             case 1:
                 return (
-                    <Tag color="green" icon={<CheckCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                    <Tag color="green" icon={<CheckCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center', fontSize: "16px" }}>
                         Activo
                     </Tag>
                 );
@@ -241,13 +262,13 @@ const ViewAllContrato = () => {
                 );
             case 3:
                 return (
-                    <Tag color="red" icon={<CloseCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                    <Tag color="red" icon={<CloseCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center', fontSize: "16px" }}>
                         Eliminado
                     </Tag>
                 );
             default:
                 return (
-                    <Tag color="gray" icon={<QuestionCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center',  fontSize: "16px" }}>
+                    <Tag color="gray" icon={<QuestionCircleOutlined />} style={{ height: '32px', display: 'flex', alignItems: 'center', fontSize: "16px" }}>
                         Desconocido
                     </Tag>
                 );
@@ -264,8 +285,8 @@ const ViewAllContrato = () => {
         <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Title level={3} style={{ margin: 0 }}>Detalles avanzados del contrato </Title>
-                    <div style={{marginLeft: "24px"}}>
+                    <Title level={3} style={{ margin: 0 }}>Detalles avanzados del contrato</Title>
+                    <div style={{ marginLeft: "24px" }}>
                         {renderStatusTag(estatus)}
                     </div>
                 </div>
@@ -354,31 +375,51 @@ const ViewAllContrato = () => {
                             {!isEditing ? (
                                 <>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
-                                        <Button type="primary" onClick={() => setIsEditing(true)} style={{ width: '48%' }}>
+                                        <Button type="primary" onClick={() => setIsEditing(true)} style={{ width: '48%' }} disabled={estatus !== 1}>
                                             Actualizar
                                         </Button>
                                         <Button danger type="text" onClick={handleCancel} style={{ width: '48%' }}>
                                             Volver
                                         </Button>
                                     </div>
-                                    <Popconfirm
-                                        title="¿Estás seguro de que deseas restaurar este Contrato?"
-                                        icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
-                                        onConfirm={handleRestore}
-                                        okText="Sí"
-                                        cancelText="No"
-                                        okButtonProps={{
-                                            style: { backgroundColor: 'orange', borderColor: 'orange' }
-                                        }}
-                                    >
-                                        <Button
-                                            danger
-                                            style={{ borderColor: 'orange', color: 'orange', width: '100%' }}
-                                            disabled={estatus === 1}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }} >
+                                        <Popconfirm
+                                            title="¿Estás seguro de que deseas restaurar este Contrato?"
+                                            icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
+                                            onConfirm={handleRestore}
+                                            okText="Sí"
+                                            cancelText="No"
+                                            okButtonProps={{
+                                                style: { backgroundColor: 'orange', borderColor: 'orange' }
+                                            }}
                                         >
-                                            Restaurar Contrato
-                                        </Button>
-                                    </Popconfirm>
+                                            <Button
+                                                danger
+                                                style={{ borderColor: 'orange', color: 'orange', width: '48%' }}
+                                                disabled={estatus === 1}
+                                            >
+                                                Reactivar Contrato
+                                            </Button>
+                                        </Popconfirm>
+                                        <Popconfirm
+                                            title="¿Estás seguro de que deseas Finalizar este Contrato?"
+                                            icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
+                                            onConfirm={handleFinalize}
+                                            okText="Sí"
+                                            cancelText="No"
+                                            okButtonProps={{
+                                                style: { backgroundColor: 'orange', borderColor: 'orange' }
+                                            }}
+                                        >
+                                            <Button
+                                                danger
+                                                style={{ borderColor: 'orange', color: 'orange', width: '48%' }}
+                                                disabled={estatus !== 1}
+                                            >
+                                                Finalizar Contrato
+                                            </Button>
+                                        </Popconfirm>
+                                    </div>
                                 </>
                             ) : (
                                 <>
@@ -390,24 +431,6 @@ const ViewAllContrato = () => {
                                             Cancelar
                                         </Button>
                                     </div>
-                                    <Popconfirm
-                                        title="¿Estás seguro de que deseas restaurar este Contrato?"
-                                        icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
-                                        onConfirm={handleRestore}
-                                        okText="Sí"
-                                        cancelText="No"
-                                        okButtonProps={{
-                                            style: { backgroundColor: 'orange', borderColor: 'orange' }
-                                        }}
-                                    >
-                                        <Button
-                                            danger
-                                            style={{ borderColor: 'orange', color: 'orange', width: '100%' }}
-                                            disabled={estatus === 1}
-                                        >
-                                            Restaurar Contrato
-                                        </Button>
-                                    </Popconfirm>
                                 </>
                             )}
                         </Col>

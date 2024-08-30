@@ -88,6 +88,7 @@ const Enlaces = () => {
 
     const fetchData = async () => {
         try {
+            // Solicitud para obtener los enlaces
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URI}enlaces/detallados?estatus=1`, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -95,6 +96,7 @@ const Enlaces = () => {
             });
             const enlacesData = response.data.enlaces;
 
+            // Solicitud para obtener los contratos
             const contratosResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URI}contratos/detallados`, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -102,13 +104,14 @@ const Enlaces = () => {
             });
             const contratosData = contratosResponse.data.contratos;
 
+            // Mapear los enlaces con sus respectivos contratos
             const enlacesMapped = enlacesData.map(enlace => ({
                 key: enlace.id,
                 nombre: `${enlace.nombre} ${enlace.apellidoP} ${enlace.apellidoM}`,
                 correo: enlace.correo,
                 telefono: enlace.telefono,
+                dependencia: enlace.dependencia, // Añadido
                 direccion: enlace.direccion,
-                adscripcion: enlace.adscripcion,
                 cargo: enlace.cargo,
                 contratos: contratosData.filter(contrato => contrato.enlaceId === enlace.id),
             }));
@@ -116,9 +119,13 @@ const Enlaces = () => {
             setOriginalData(enlacesMapped);
             setFilteredData(enlacesMapped);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            // Ignorar el error 404 y manejar otros errores
+            if (error.response && error.response.status !== 404) {
+                console.error('Error fetching data:', error);
+            }
         }
     };
+
 
     useEffect(() => {
         fetchData();
@@ -248,15 +255,15 @@ const Enlaces = () => {
             align: 'center',
         },
         {
-            title: 'Dirección',
-            dataIndex: 'direccion',
-            key: 'direccion',
+            title: 'Dependencia', // Añadido
+            dataIndex: 'dependencia',
+            key: 'dependencia',
             align: 'center',
         },
         {
-            title: 'Adscripción',
-            dataIndex: 'adscripcion',
-            key: 'adscripcion',
+            title: 'Dirección',
+            dataIndex: 'direccion',
+            key: 'direccion',
             align: 'center',
         },
         {

@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import { Table, Button, Typography, Divider, Input } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Typography, Divider, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -16,17 +16,23 @@ const Servicios = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados`)
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}servicios/detallados?estatus=1`)
             .then(response => {
-                const servicios = response.data.servicios;
+                const servicios = response.data.servicios || [];
                 setOriginalData(servicios);
                 setFilteredData(servicios);
-                setLoading(false);
             })
             .catch(error => {
-                console.error('Error al obtener los servicios:', error);
+                if (error.response && error.response.status !== 404) {
+                    message.error('Hubo un error al obtener los servicios');
+                    console.error('Error al obtener los servicios:', error);
+                }
+            })
+            .finally(() => {
+                setLoading(false);
             });
     }, []);
+
 
     const formatFecha = (fecha) => {
         const date = new Date(fecha);
